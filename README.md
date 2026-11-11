@@ -45,6 +45,22 @@ A suggested order for presenting. Each step links to the detail behind it.
 
 - **[App inventory](app-inventory.md):** every app, how users sign in, SOC 2 scope, Okta priority, and assignment review. Used by the postmortem, IdP migration, and gap assessment.
 
+## Scope: MVP Before the Audit vs. Post-Audit Backlog
+
+**MVP** is what must be true for the SOC 2 Type II window and to remove the outage's single point of failure. Everything else is planned, owned, and burned down after the audit.
+
+| Area | MVP: before / during the observation window | Post-audit backlog |
+| --- | --- | --- |
+| **Identity** | Okta live for all users; MFA everywhere, phishing-resistant for admins; Google + all Keycloak SSO apps moved; Priority 1 (SOC 2) apps on Okta with SCIM where supported | Priority 3 password apps (SSO, vaulting, or retire); sandbox org backport; passwordless (FastPass) for everyone |
+| **Groups** | Access and org-structure groups rebuilt in Okta; privileged groups approved member by member | Google collaboration group cleanup; finer-grained team groups (e.g., GitHub) |
+| **Lifecycle** | Rippling-driven joiner/leaver with offboarding Workflows; terminated-user sweep done | Mover and rehire flows; contractors into Rippling; access requests and certifications tooling |
+| **Devices** | MDM migration ≥ 95% healthy; EDR on every device; encryption keys escrowed in Iru | Device trust enforced on the sensitive tier; desktop MFA / password sync; local admin rights cleanup |
+| **Monitoring** | Logs kept 365 days (both IdPs); Okta Workflows → Slack alerts | SIEM |
+| **Process** | First access review done, quarterly cadence set; IR plan written; break-glass and admin recovery paths tested; control change log | Recurring tabletop exercises; shadow-IT discovery as a standing process; license cleanup |
+| **Decommission** | Keycloak frozen with no apps on it | Keycloak shut down after the 30-day log check; JumpCloud retired |
+
+**Rule of thumb:** if an auditor will test it during the window, or it removes the risk that caused the outage, it's MVP.
+
 ## Program Flow
 
 ```mermaid

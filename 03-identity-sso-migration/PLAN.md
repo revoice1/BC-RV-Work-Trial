@@ -43,10 +43,10 @@
   - Is it **correct**? (right people)
   - Work with app owners to confirm and sign off
   - Tracked in [app-inventory.md](../app-inventory.md)
-- Inventory existing groups
+- Inventory existing groups in Keycloak and Google, and tag each as access, org-structure, privileged, or collaboration ([group migration](docs/group-migration.md))
 - Confirm Rippling is the HR source of truth and its data quality is good enough to source Okta profiles (without an HRIS, see the [appendix](#no-hr-source-of-truth))
 
-**Groups:** redesigned around **attribute-driven group rules** (ABAC from Rippling attributes), not lifted and shifted. Hand-maintained groups are where the [assignment review](../app-inventory.md#assignment-review) found the most errors.
+**Groups:** redesigned around **attribute-driven group rules** (ABAC from Rippling attributes), not lifted and shifted. Hand-maintained groups are where the [assignment review](../app-inventory.md#assignment-review) found the most errors. Privileged groups stay manual with approval. Details: [group-migration.md](docs/group-migration.md).
 
 **Timebox:** 3 weeks ([timeline](../README.md#proposed-timeline)). **Exit criteria:** inventory signed off by app owners, SOC 2 scope confirmed by Compliance, SAML details captured for every SSO app, and the first [identity reconciliation](docs/identity-reconciliation.md) run.
 
