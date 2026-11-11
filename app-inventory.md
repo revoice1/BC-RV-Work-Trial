@@ -48,28 +48,40 @@ flowchart TD
 
 **"Sign in with Google" apps:** these move behind Okta automatically once Google Workspace federates to Okta. For Priority 1 apps that's not enough: they still need direct SAML/SCIM so access is removed when someone leaves.
 
-| App | Auth Today | Discovered Via | SOC 2 Scope (proposed) | Compliance | Okta Priority |
-| --- | --- | --- | --- | --- | --- |
-| Google Workspace | SAML via Keycloak | Keycloak client | Required: email, documents, customer data | Confirmed | 1 |
-| AWS | SAML via Keycloak | Keycloak client | Required: production | Confirmed | 1 |
-| GitHub | SAML via Keycloak | Keycloak client | Required: source code, change management | Confirmed | 1 |
-| Jira / Confluence | Sign in with Google | Google OAuth grants | Required: change management evidence | Confirmed | 1 |
-| Datadog | Sign in with Google | Google OAuth grants | Likely required: production logs may contain customer data | Pending | 1 |
-| Slack | Sign in with Google | Google OAuth grants | Customer data shared in channels? | Pending | 1 |
-| Salesforce | Password | Expense data | Required: customer data | Confirmed | 1 |
-| Zendesk | Password | Expense data | Required: customer PII | Confirmed | 1 |
-| 1Password | Password (master) | IT-managed | Required: credential store | Confirmed | 1 |
-| Rippling | Password | IT-managed | Required: joiner/leaver evidence | Confirmed | 1 |
-| CrowdStrike Falcon | Password | Security-managed | Required: security tooling | Confirmed | 1 |
-| Iru | Password (new tenant) | IT-managed | Required: device controls | Confirmed | 1 |
-| NetSuite | Password | Finance team | Financial system; usually not SOC 2 security scope | Pending | 1 |
-| Mailchimp | Shared password | 1Password shared vault | Customer email lists? | Pending | 1 |
-| Greenhouse | SAML via Keycloak | Keycloak client | Not required: candidate data | Confirmed | 2 |
-| Zoom | Sign in with Google | Google OAuth grants | Not required | Confirmed | 2 |
-| Figma | Sign in with Google | Google OAuth grants | Not required | Confirmed | 2 |
-| Lucidchart | Sign in with Google | Google OAuth grants | Not required | Confirmed | 2: retire if no owner found |
-| 2 unidentified Keycloak clients | SAML via Keycloak | Keycloak client | n/a | n/a | Retire (postmortem item 12) |
-| JumpCloud | Password | IT-managed | n/a: being replaced by Iru | n/a | Retire after [MDM migration](02-mdm-reenrollment/PLAN.md) |
+| App | Auth Today | Discovered Via | SOC 2 Scope (proposed) | Compliance | Okta Priority | SCIM |
+| --- | --- | --- | --- | --- | --- | --- |
+| Google Workspace | SAML via Keycloak | Keycloak client | Required: email, documents, customer data | Confirmed | 1 | Yes |
+| AWS | SAML via Keycloak | Keycloak client | Required: production | Confirmed | 1 | Yes |
+| GitHub | SAML via Keycloak | Keycloak client | Required: source code, change management | Confirmed | 1 | Yes |
+| Jira / Confluence | Sign in with Google | Google OAuth grants | Required: change management evidence | Confirmed | 1 | Plan-gated |
+| Datadog | Sign in with Google | Google OAuth grants | Likely required: production logs may contain customer data | Pending | 1 | Yes |
+| Slack | Sign in with Google | Google OAuth grants | Customer data shared in channels? | Pending | 1 | Plan-gated |
+| Salesforce | Password | Expense data | Required: customer data | Confirmed | 1 | Yes |
+| Zendesk | Password | Expense data | Required: customer PII | Confirmed | 1 | Yes |
+| 1Password | Password (master) | IT-managed | Required: credential store | Confirmed | 1 | Yes |
+| Rippling | Password | IT-managed | Required: joiner/leaver evidence | Confirmed | 1 | n/a (HR source) |
+| CrowdStrike Falcon | Password | Security-managed | Required: security tooling | Confirmed | 1 | No |
+| Iru | Password (new tenant) | IT-managed | Required: device controls | Confirmed | 1 | No |
+| NetSuite | Password | Finance team | Financial system; usually not SOC 2 security scope | Pending | 1 | No |
+| Mailchimp | Shared password | 1Password shared vault | Customer email lists? | Pending | 1 | No |
+| Greenhouse | SAML via Keycloak | Keycloak client | Not required: candidate data | Confirmed | 2 | Yes |
+| Zoom | Sign in with Google | Google OAuth grants | Not required | Confirmed | 2 | Yes |
+| Figma | Sign in with Google | Google OAuth grants | Not required | Confirmed | 2 | Plan-gated |
+| Lucidchart | Sign in with Google | Google OAuth grants | Not required | Confirmed | 2: retire if no owner found | Plan-gated |
+| 2 unidentified Keycloak clients | SAML via Keycloak | Keycloak client | n/a | n/a | Retire (postmortem item 12) | n/a |
+| JumpCloud | Password | IT-managed | n/a: being replaced by Iru | n/a | Retire after [MDM migration](02-mdm-reenrollment/PLAN.md) | n/a |
+
+### SSO and SCIM
+
+**SSO controls sign-in. SCIM controls whether the account exists.** Without SCIM, deactivating someone in Okta blocks the SSO sign-in, but their account in the app stays active: existing sessions, API tokens, mobile sessions, any local password, and a paid seat. That's how departed users stay active in apps (gap assessment [#1](05-security-gap-assessment/PLAN.md#top-10)). Auditors test this by sampling leavers and checking each app.
+
+| SCIM status | Approach |
+| --- | --- |
+| **Yes** | SSO + SCIM: accounts created, updated, and deactivated from Okta. Provisioning logs are the SOC 2 evidence |
+| **Plan-gated** (SCIM only on a higher tier) | Upgrade for Priority 1 apps, or treat as **No** with a documented decision |
+| **No** | Compensating controls: **enforce SSO-only sign-in** (no local passwords), just-in-time account creation if supported, **a deprovisioning task to the app owner** from the offboarding Workflow ([04 ULM](04-hris-lifecycle-automation/PLAN.md#actions)), and extra scrutiny in the quarterly access review |
+
+SCIM values above are sample data; confirm each vendor's current plan and capabilities.
 
 ## Assignment Review
 

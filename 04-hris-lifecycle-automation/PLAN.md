@@ -73,6 +73,7 @@ Because Workflow B keys off deactivation, an urgent termination where IT deactiv
 | 4 | Google | **Rename the email address**: append `archive` (e.g., `jane.doe@` → `jane.doe.archive@`) |
 | 5 | Google | **Archive the user** |
 | 6 | Google | **Create a new group (DL)** using the user's **original email address**, **hidden from the global address list**, with the **manager as a member**, so mail sent to the leaver keeps reaching someone |
+| 7 | Apps without SCIM | **Post a deprovisioning task** to the owner of each non-SCIM app the user was assigned (Slack or ticket), with an SLA **(proposed: 1 business day)**; completion is the SOC 2 evidence |
 
 ```mermaid
 flowchart TD
@@ -123,7 +124,7 @@ These are the details most likely to bite. Each should be confirmed when the Wor
 | New hire activates and sets password before start date | Sees only the limited apps |
 | Start date passes | Removed from limited group; baseline groups and apps assigned |
 | Start date moved later in Rippling | Stays in the limited group until the new date |
-| Rippling termination | Okta user suspended → Workflow A deactivates → Workflow B runs → all 6 actions complete |
+| Rippling termination | Okta user suspended → Workflow A deactivates → Workflow B runs → all actions complete |
 | IT manually deactivates a user in Okta | Workflow B runs → all Google steps complete |
 | Mail to the leaver's original address | Delivered to the manager via the hidden DL; DL not visible in the address list |
 | DL at 76 days | Members notified |
@@ -141,5 +142,4 @@ These are the details most likely to bite. Each should be confirmed when the Wor
 - **Mover** flow: department/manager changes re-evaluate group rules automatically; does anything else need to happen (e.g., Drive ownership, access review)?
 - **Rehire** flow: reactivate the existing Okta user and un-archive Google, or start fresh?
 - **Contractors:** not in Rippling today; need their own end-date-driven leaver flow ([identity-reconciliation.md](../03-identity-sso-migration/docs/identity-reconciliation.md))
-- Leaver steps for non-Google apps that don't support SCIM (manual checklist from the [app inventory](../app-inventory.md))
 - Offboarding SLA target (e.g., access removed within 1 hour of termination)

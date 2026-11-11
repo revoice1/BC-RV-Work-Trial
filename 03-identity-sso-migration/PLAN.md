@@ -120,12 +120,14 @@ Apps move **one at a time, several per day**, in [inventory priority order](../a
 
 **Per-app runbook:**
 
-1. Build the app in Okta (SAML/OIDC, SCIM where supported); assign groups from the [assignment review](../app-inventory.md#assignment-review)
+1. Build the app in Okta: SAML/OIDC for sign-in, **SCIM for provisioning wherever supported** ([why both](../app-inventory.md#sso-and-scim)); assign groups from the [assignment review](../app-inventory.md#assignment-review)
 2. Match the **NameID** to what Keycloak sends today (captured in Phase 1), or accounts duplicate
 3. Test with a test user
 4. Cut over: point the app at Okta's metadata/certificate
 5. Verify with real users; watch sign-in errors
-6. **Rollback:** point the app back at Keycloak's metadata
+6. **Enforce SSO-only:** turn off local password sign-in, so deactivating someone in Okta actually removes access. Keep one documented, monitored admin recovery path per app ([postmortem lesson](../01-incident-response/postmortem.md#how-we-regained-admin-access))
+7. **Turn on SCIM deprovisioning** (or register the app for the offboarding Workflow's manual task if it has no SCIM)
+8. **Rollback:** point the app back at Keycloak's metadata
 
 **Comms depend on audience size:**
 
