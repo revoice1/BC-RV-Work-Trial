@@ -47,7 +47,7 @@ flowchart LR
 | Event | Rippling trigger | Okta result |
 | --- | --- | --- |
 | Pre-hire | Up to 4 days before start date | User created **Provisioned**; Rippling activates. Workflow adds them to **Pre-start Limited Access** (excluded from group rules). See [04 ULM](../../04-hris-lifecycle-automation/PLAN.md#joiner-pre-start-access) |
-| Day 1 | Start date has passed | Workflow removes them from the limited group → group rules assign birthright apps |
+| Day 1 | Start date has passed | Workflow removes them from the limited group → group rules assign baseline apps |
 | Mover | Dept / title / manager change | Attributes update → group rules re-evaluate → access added/removed |
 | Leave of absence | Status = leave | Decide with Security: suspend vs. keep active _OPEN_ |
 | Planned termination | Rippling termination | Rippling **suspends** Okta user → offboarding Workflow deactivates Okta + offboards Google. See [04 ULM](../../04-hris-lifecycle-automation/PLAN.md#leaver-offboarding) |
@@ -62,7 +62,7 @@ flowchart LR
 3. **Run a reconciliation before go-live:** compare the Rippling export against Keycloak users ([identity-reconciliation.md](identity-reconciliation.md)). Fix name/email mismatches in Rippling first, and decide what happens to identities HR doesn't manage.
 4. **Link, don't duplicate:** existing Google accounts must match the Rippling-created Okta users by email when the Okta → Google Workspace app is connected. Check matches in the import screen before confirming anything.
 5. **Use a dedicated integration service account** with the least-privileged admin role the integration supports **[verify]**. Store its credential in the restricted vault (see [okta-tenant-setup.md](okta-tenant-setup.md#super-admin--break-glass-accounts)) and rotate it on a schedule.
-6. **Group rules on attributes, not manual membership:** `department`, `userType`, `countryCode` → birthright groups. This is what fixes the "hand-maintained group" problems in the [app inventory](../../app-inventory.md).
+6. **Group rules on attributes, not manual membership:** `department`, `userType`, `countryCode` → baseline groups. This is what fixes the "hand-maintained group" problems in the [app inventory](../../app-inventory.md).
 7. **Time zones:** confirm what time terminations take effect (midnight in which time zone?) **[verify]**.
 8. **Monitor sync failures:** alert on errors from the integration in the Okta System Log. A silent sync failure means a terminated user keeps access.
 

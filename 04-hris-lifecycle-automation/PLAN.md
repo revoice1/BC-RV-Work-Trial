@@ -8,7 +8,7 @@
 | Event | Trigger | Automation |
 | --- | --- | --- |
 | **Pre-hire** | Rippling creates the user, up to 4 days before start date | Okta Workflow puts them in a **Pre-start Limited Access** group, excluded from all group rules |
-| **Day 1** | Start date reached | Workflow removes them from the limited group, so group rules grant birthright access |
+| **Day 1** | Start date reached | Workflow removes them from the limited group, so group rules grant baseline access |
 | **Leaver** | Rippling termination suspends the Okta user | Workflow deactivates the Okta user. **Okta deactivation** (from any source) triggers Google offboarding: data transfer, archive, mail continuity |
 | **Leaver + 90 days** | Scheduled | Workflow notifies, then cleans up the leaver's mail-continuity group |
 
@@ -16,15 +16,15 @@ Attribute mapping from Rippling to Okta: [rippling-okta-integration.md](../03-id
 
 ## Joiner: Pre-start Access
 
-**Goal:** new hires can get into a small set of apps (e.g., onboarding paperwork) before day 1, **without** getting their full birthright access early.
+**Goal:** new hires can get into a small set of apps (e.g., onboarding paperwork) before day 1, **without** getting their full baseline access early.
 
 ### Building blocks
 
 | Component | Behavior |
 | --- | --- |
 | **Rippling → Okta** | Creates the user up to **4 days before start date** with mapped attributes. User is **Provisioned** (exists, password not set yet). **Rippling also activates the user** |
-| **Okta group rules** | **Ignore users who aren't Active**, so a Provisioned user gets no birthright groups |
-| **Pre-start Limited Access group** | Assigned a **subset of apps** we want new hires to reach before their start date. Its group ID is **excluded from every dynamic group rule**, so members stay out of birthright groups even after they activate and set a password |
+| **Okta group rules** | **Ignore users who aren't Active**, so a Provisioned user gets no baseline groups |
+| **Pre-start Limited Access group** | Assigned a **subset of apps** we want new hires to reach before their start date. Its group ID is **excluded from every dynamic group rule**, so members stay out of baseline groups even after they activate and set a password |
 | **Okta Workflow: pre-start** | Reads the user's start date. Adds pre-start users to the limited group; **removes them once their start date has passed** |
 
 ### Flow
@@ -42,10 +42,10 @@ sequenceDiagram
     R->>O: Activate user
     Note over O: New hire sets password + enrolls MFA
     O->>A: Limited group apps only
-    Note over O: Limited group excluded from all group rules,<br/>so no birthright groups yet
+    Note over O: Limited group excluded from all group rules,<br/>so no baseline groups yet
     W->>O: Start date has passed: remove from Pre-start Limited Access
     Note over O: Group rules now evaluate the user
-    O->>A: Birthright groups → apps provisioned
+    O->>A: Baseline groups → apps provisioned
 ```
 
 ### Pre-start apps
@@ -112,16 +112,16 @@ These are the details most likely to bite. Each should be confirmed when the Wor
 | 4 | **Urgent terminations.** Handled by design: IT can deactivate directly in Okta and Workflow B still runs. Rippling must still be updated afterward | Otherwise Rippling and Okta disagree, and the next sync could try to reactivate the user **[verify]** |
 | 5 | **Pre-start timing.** When does the "start date has passed" check run, and in which time zone? | A daily run at the wrong hour gives a new hire in another time zone no access on their first morning. Run it early (or hourly) in the earliest company time zone |
 | 6 | **Start date changes.** Rippling start dates move (offer delays, early starts) | The pre-start Workflow must re-read the start date, not just act once at creation |
-| 7 | **Pre-start group exclusion.** Every *new* group rule must also exclude the limited group | Add it to the group-rule checklist; one missed rule leaks birthright access early |
+| 7 | **Pre-start group exclusion.** Every *new* group rule must also exclude the limited group | Add it to the group-rule checklist; one missed rule leaks baseline access early |
 | 8 | **Workflow failures.** A failed offboarding run means a leaver keeps access or loses data | Alert IT on any failed execution; review run history weekly |
 
 ## Testing (proposed)
 
 | Test | Expected result |
 | --- | --- |
-| Rippling creates a hire with start date in 4 days | Okta user Provisioned; added to Pre-start Limited Access; no birthright groups |
+| Rippling creates a hire with start date in 4 days | Okta user Provisioned; added to Pre-start Limited Access; no baseline groups |
 | New hire activates and sets password before start date | Sees only the limited apps |
-| Start date passes | Removed from limited group; birthright groups and apps assigned |
+| Start date passes | Removed from limited group; baseline groups and apps assigned |
 | Start date moved later in Rippling | Stays in the limited group until the new date |
 | Rippling termination | Okta user suspended → Workflow A deactivates → Workflow B runs → all 6 actions complete |
 | IT manually deactivates a user in Okta | Workflow B runs → all Google steps complete |
