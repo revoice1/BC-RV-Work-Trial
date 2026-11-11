@@ -147,4 +147,5 @@ Late-December holidays and change freezes squeeze the MDM and Okta foundation wo
 
 ## Shared Artifacts
 
+- **[Program brief](docs/index.html):** one-page visual summary for presenting: scenario, outage, program flow, timeline, decisions, top 10 fixes, MVP. Viewable as a web page once GitHub Pages is enabled (Settings → Pages → branch `main`, folder `/docs`).
 - **[App inventory](app-inventory.md):** every app, how users sign in, SOC 2 scope, Okta priority, and assignment review. Used by the postmortem, IdP migration, and gap assessment.

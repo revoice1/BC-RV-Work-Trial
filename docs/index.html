@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AiLense Program Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: a briefing read top to bottom in presentation order; sticky section nav; numbered sections = the walkthrough sequence. */
+:root {
+  --bg: #F4F6F9;
+  --surface: #FFFFFF;
+  --ink: #15202D;
+  --muted: #586577;
+  --line: #DCE2EA;
+  --accent: #2753B8;
+  --accent-soft: #E5ECFA;
+  --warn: #A85400;
+  --warn-soft: #FBEEDC;
+  --crit: #B3262D;
+  --ok: #1E7449;
+  --f-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E131A; --surface: #151C26; --ink: #E5EAF1; --muted: #9AA5B4; --line: #263140;
+    --accent: #84A6F3; --accent-soft: #1B2944; --warn: #F0A24E; --warn-soft: #36271A;
+    --crit: #F06C72; --ok: #61C893; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E131A; --surface: #151C26; --ink: #E5EAF1; --muted: #9AA5B4; --line: #263140;
+  --accent: #84A6F3; --accent-soft: #1B2944; --warn: #F0A24E; --warn-soft: #36271A;
+  --crit: #F06C72; --ok: #61C893; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 16px/1.6 var(--f-body);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(2rem, 4.6vw, 3.2rem); font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.45rem, 2.6vw, 1.9rem); font-weight: 600; letter-spacing: -0.01em; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; }
+.mono, code { font-family: var(--f-mono); font-size: 0.86em; }
+.num { font-variant-numeric: tabular-nums; }
+
+.wrap {
+  max-width: 1100px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* Sticky nav */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--surface); border-bottom: 1px solid var(--line);
+}
+.top .wrap { display: flex; align-items: center; gap: 20px; padding-block: 10px; }
+.brand { font-family: var(--f-display); font-weight: 700; white-space: nowrap; }
+.brand span { color: var(--muted); font-weight: 500; }
+.toc { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; min-width: 0; }
+.toc::-webkit-scrollbar { display: none; }
+.toc a {
+  white-space: nowrap; text-decoration: none; color: var(--muted);
+  font-size: 0.84rem; padding: 4px 9px; border-radius: 999px;
+}
+.toc a:hover { color: var(--ink); background: var(--bg); }
+.toc a.on { color: var(--accent); background: var(--accent-soft); }
+
+/* Sections */
+section { padding-block: 56px; border-bottom: 1px solid var(--line); scroll-margin-top: 56px; }
+section:last-of-type { border-bottom: 0; }
+.head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; max-width: 760px; }
+.eyebrow {
+  font-family: var(--f-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent);
+}
+.lead { color: var(--muted); font-size: 1.05rem; max-width: 68ch; }
+.more { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 22px; font-size: 0.92rem; }
+.more a::after { content: " ↗"; font-size: 0.85em; }
+
+/* Hero */
+.hero { padding-block: 64px 48px; }
+.hero h1 { max-width: 18ch; }
+.hero .lead { margin-top: 18px; font-size: 1.12rem; }
+.facts {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1px;
+  margin-top: 36px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+}
+.facts div { background: var(--surface); padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+.facts dt { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.facts dd { margin: 0; font-family: var(--f-display); font-weight: 600; font-size: 1.15rem; }
+
+/* Scenario */
+.scenario { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px 40px; counter-reset: s; padding: 0; margin: 0; list-style: none; }
+.scenario li { display: grid; grid-template-columns: 28px 1fr; gap: 12px; padding-block: 12px; border-top: 1px solid var(--line); }
+.scenario li::before { counter-increment: s; content: counter(s); font-family: var(--f-mono); color: var(--muted); font-size: 0.85rem; padding-top: 2px; }
+
+/* Outage */
+.split { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 40px; }
+@media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
+.tl { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--line); }
+.tl li { position: relative; display: grid; grid-template-columns: 56px 1fr; gap: 12px; padding: 0 0 14px 18px; }
+.tl li::before { content: ""; position: absolute; left: -6px; top: 7px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--muted); }
+.tl li.bad::before { border-color: var(--crit); background: var(--crit); }
+.tl li.good::before { border-color: var(--ok); background: var(--ok); }
+.tl time { font-family: var(--f-mono); font-size: 0.85rem; color: var(--muted); padding-top: 2px; }
+.tl .why { color: var(--muted); font-size: 0.9rem; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; }
+.panel ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; }
+.kicker { font-family: var(--f-mono); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+
+/* Program flow */
+.flow-scroll { overflow-x: auto; }
+.flow { display: grid; grid-template-columns: repeat(5, minmax(170px, 1fr)); gap: 0; min-width: 880px; }
+.stage { padding: 0 14px; display: flex; flex-direction: column; gap: 10px; position: relative; }
+.stage + .stage { border-left: 1px dashed var(--line); }
+.stage > .kicker { padding-bottom: 4px; }
+.node { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 0.9rem; line-height: 1.4; }
+.node b { display: block; font-family: var(--f-display); font-weight: 600; }
+.node .ws { font-family: var(--f-mono); font-size: 0.75rem; color: var(--accent); }
+.node.gate { border-color: var(--warn); background: var(--warn-soft); }
+.node.end { border-color: var(--accent); background: var(--accent-soft); }
+
+/* Gantt */
+.gantt-scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.gantt { min-width: 820px; padding: 16px 18px 18px; position: relative; }
+.g-axis, .g-row { display: grid; grid-template-columns: 210px 1fr; align-items: center; }
+.g-axis { height: 26px; border-bottom: 1px solid var(--line); margin-bottom: 6px; }
+.g-track { position: relative; height: 100%; }
+.g-tick { position: absolute; top: 0; bottom: 0; font-family: var(--f-mono); font-size: 0.74rem; color: var(--muted); border-left: 1px solid var(--line); padding-left: 5px; }
+.g-group { font-family: var(--f-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); padding-top: 10px; }
+.g-row { height: 26px; }
+.g-label { font-size: 0.84rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 10px; }
+.g-bar { position: absolute; top: 6px; height: 14px; border-radius: 4px; background: var(--accent); opacity: 0.88; }
+.g-bar.soft { background: var(--muted); opacity: 0.5; }
+.g-bar.win { background: var(--warn); opacity: 0.85; }
+.g-ms { position: absolute; top: 5px; width: 14px; height: 14px; transform: translateX(-7px) rotate(45deg); background: var(--crit); border-radius: 2px; }
+.g-window { position: absolute; top: 26px; bottom: 0; background: var(--warn-soft); opacity: 0.55; pointer-events: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 12px; font-size: 0.84rem; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
+
+/* Workstreams */
+.ws-list { display: flex; flex-direction: column; }
+.ws-item { display: grid; grid-template-columns: 70px minmax(0, 1fr) minmax(0, 1.4fr); gap: 20px; padding-block: 20px; border-top: 1px solid var(--line); }
+.ws-item:last-child { border-bottom: 1px solid var(--line); }
+@media (max-width: 760px) { .ws-item { grid-template-columns: 1fr; gap: 8px; } }
+.ws-no { font-family: var(--f-mono); color: var(--muted); font-size: 0.9rem; }
+.pill { display: inline-block; font-size: 0.74rem; font-weight: 500; padding: 2px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); margin-top: 6px; }
+.ws-item ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 0.94rem; }
+.ws-links { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 8px; font-size: 0.88rem; }
+
+/* Tables */
+.table-scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: 0; }
+th { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 500; background: var(--bg); }
+td:first-child { font-weight: 500; }
+.decisions td:first-child { width: 30%; }
+.risk { display: flex; align-items: center; gap: 10px; min-width: 130px; }
+.risk-bar { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+.risk-bar span { display: block; height: 100%; background: var(--crit); border-radius: 4px; }
+.risk-bar span.m { background: var(--warn); }
+.risk b { font-family: var(--f-mono); font-weight: 500; width: 2ch; text-align: right; }
+.gap td:first-child { font-family: var(--f-mono); color: var(--muted); font-weight: 400; width: 3ch; }
+.soc { font-family: var(--f-mono); font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+
+/* MVP */
+.mvp td:first-child { width: 14%; }
+.mvp th:nth-child(2) { color: var(--ok); }
+.rule { margin-top: 18px; padding: 14px 18px; border-left: 3px solid var(--ok); background: var(--surface); border-radius: 0 8px 8px 0; max-width: 760px; }
+
+/* Dig in */
+.dig { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.dig a { display: flex; flex-direction: column; gap: 4px; padding: 16px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink); }
+.dig a:hover { border-color: var(--accent); }
+.dig a span { font-size: 0.86rem; color: var(--muted); }
+.dig a b { font-family: var(--f-display); font-weight: 600; color: var(--accent); }
+
+footer { padding-block: 28px 48px; color: var(--muted); font-size: 0.86rem; }
+
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">AiLense <span>program brief</span></div>
+    <nav class="toc" aria-label="Sections">
+      <a href="#scenario">1 Scenario</a>
+      <a href="#outage">2 Outage</a>
+      <a href="#flow">3 Program</a>
+      <a href="#timeline">4 Timeline</a>
+      <a href="#workstreams">5 Workstreams</a>
+      <a href="#decisions">6 Decisions</a>
+      <a href="#gaps">7 Top 10 fixes</a>
+      <a href="#mvp">8 MVP</a>
+      <a href="#dig-in">9 Dig in</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">SOC 2 readiness &amp; identity modernization</p>
+      <h1 style="margin-top:10px">Five prompts, one connected program</h1>
+      <p class="lead">The prompts read as a menu. This response takes on all five as one program at AiLense, because in practice they depend on each other: the outage drives the migration, MDM gates Okta, Okta enables HR-driven lifecycle, and all of it feeds the SOC 2 audit.</p>
+      <dl class="facts">
+        <div><dt>People</dt><dd class="num">400, global</dd></div>
+        <div><dt>Audit deadline</dt><dd class="num">Apr 16, 2027</dd></div>
+        <div><dt>Type II window</dt><dd class="num">Jan 16 – Apr 16</dd></div>
+        <div><dt>Identity</dt><dd>Keycloak → Okta</dd></div>
+        <div><dt>Devices</dt><dd>JumpCloud → Iru</dd></div>
+        <div><dt>HR source</dt><dd>Rippling</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section id="scenario">
+    <div class="wrap">
+      <div class="head"><p class="eyebrow">1 · Scenario</p><h2>Where AiLense starts</h2></div>
+      <ol class="scenario">
+        <li><span>A <strong>5-month SOC 2 deadline</strong>, Type II.</span></li>
+        <li><span>A <strong>3-hour outage</strong> of the self-hosted Keycloak IdP: its SAML signing certificate expired.</span></li>
+        <li><span>Moving to <strong>Okta</strong> for a managed IdP, HR-driven identity, and attribute-based access.</span></li>
+        <li><span>Okta Verify needs healthy devices, so the fleet moves <strong>JumpCloud → Iru</strong> first.</span></li>
+        <li><span>The <strong>gap assessment runs in parallel</strong>, filling time while app owners respond.</span></li>
+        <li><span><strong>Okta and HR-driven lifecycle go live together</strong>, with Rippling as the source.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="outage">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">2 · The trigger</p>
+        <h2>An expired certificate, then a rotation that made it worse</h2>
+        <p class="lead">Nov 10, 2026. Three hours from detection to resolution, most of it spent getting admins into apps that also signed in through the broken IdP.</p>
+      </div>
+      <div class="split">
+        <ol class="tl num">
+          <li class="bad"><time>07:00</time><div>Signing certificate expires. No alert.<div class="why">Apps that check expiry start rejecting sign-ins.</div></div></li>
+          <li><time>07:45</time><div>Detected through help desk tickets.<div class="why">Treated as password problems for 25 minutes.</div></div></li>
+          <li><time>08:35</time><div>Root cause found.</div></li>
+          <li class="bad"><time>08:40</time><div>Key rotated under pressure.<div class="why">Every SAML app now fails: each pins the old certificate.</div></div></li>
+          <li class="good"><time>09:10</time><div>Google restored, bringing back 6 "Sign in with Google" apps.</div></li>
+          <li class="good"><time>09:40</time><div>AWS restored, using an on-call engineer's CLI session that happened to still be valid.</div></li>
+          <li class="good"><time>10:15</time><div>GitHub restored by its only org owner, on PTO, with a recovery code.</div></li>
+          <li class="good"><time>10:35</time><div>Greenhouse restored through vendor support.</div></li>
+          <li class="good"><time>10:45</time><div>Resolved. Two unidentified clients never come back; nobody notices.</div></li>
+        </ol>
+        <div class="panel">
+          <p class="kicker">What it exposed</p>
+          <ul>
+            <li>No owner for the IdP, and no certificate monitoring</li>
+            <li>No inventory of which apps depended on it, or who administered them</li>
+            <li>Admin access ran through the same broken SSO</li>
+            <li>Single admins (GitHub) and an office-bound AWS root MFA key</li>
+            <li>Incident comms ran on Slack, which only worked for existing sessions</li>
+          </ul>
+          <p class="kicker">Where it leads</p>
+          <p>Managed IdP, a real app inventory, tested break-glass and admin recovery paths, and certificate alerts that carry over to Okta.</p>
+        </div>
+      </div>
+      <div class="more">
+        <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/01-incident-response/postmortem.md">Postmortem</a>
+        <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/01-incident-response/postmortem.md#how-we-regained-admin-access">How admins regained access</a>
+        <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/01-incident-response/postmortem.md#action-items">12 action items</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="flow">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">3 · Program</p>
+        <h2>How the five workstreams connect</h2>
+        <p class="lead">Amber boxes are gates: nothing downstream starts until they're met.</p>
+      </div>
+      <div class="flow-scroll">
+        <div class="flow">
+          <div class="stage">
+            <p class="kicker">Trigger</p>
+            <div class="node"><span class="ws">01</span><b>IdP outage</b>Postmortem makes the case to migrate</div>
+            <div class="node"><b>Shared app inventory</b>SSO apps known from the outage; SOC 2 scope sets priority</div>
+          </div>
+          <div class="stage">
+            <p class="kicker">Prepare, in parallel</p>
+            <div class="node"><span class="ws">02</span><b>MDM: JumpCloud → Iru</b>Apple deadline migration, scripts, CrowdStrike for stragglers</div>
+            <div class="node"><span class="ws">03</span><b>Okta foundation</b>Built in prod: tenant, policies, Rippling, reconciliation</div>
+            <div class="node"><span class="ws">05</span><b>Gap assessment</b>Top 10 fixes, week-1 quick wins</div>
+          </div>
+          <div class="stage">
+            <p class="kicker">Go live</p>
+            <div class="node gate"><b>Gate: 95% devices healthy</b>Per region, before activation</div>
+            <div class="node"><span class="ws">03</span><b>Activation</b>IT → Pilot → regions; Okta Verify enrolled</div>
+            <div class="node"><span class="ws">04</span><b>HR-driven lifecycle</b>Pre-start access, offboarding Workflows</div>
+          </div>
+          <div class="stage">
+            <p class="kicker">Cut over</p>
+            <div class="node gate"><b>Gate: 100% activated</b>Before Google moves</div>
+            <div class="node"><span class="ws">03</span><b>Google, all at once</b>One change for the whole org</div>
+            <div class="node"><span class="ws">03</span><b>Apps, one by one</b>SSO + SCIM, SSO-only sign-in, rollback to Keycloak</div>
+          </div>
+          <div class="stage">
+            <p class="kicker">Audit</p>
+            <div class="node"><span class="ws">03</span><b>Keycloak on ice</b>30-day log check, export, shut down</div>
+            <div class="node end"><b>SOC 2 Type II</b>Window Jan 16 – Apr 16 with a documented control change log</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="timeline">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">4 · Timeline</p>
+        <h2>Kickoff Nov 16, audit Apr 16</h2>
+        <p class="lead">The Type II window opens mid-January with current controls; each change as Okta replaces Keycloak is documented. Late-December holidays are the tightest stretch.</p>
+      </div>
+      <div class="gantt-scroll"><div class="gantt" id="gantt" role="img" aria-label="Program timeline from November 2026 to April 2027"></div></div>
+      <div class="legend">
+        <span><i style="background:var(--accent)"></i>Planned work</span>
+        <span><i style="background:var(--muted);opacity:.5"></i>Holding period</span>
+        <span><i style="background:var(--warn-soft);border:1px solid var(--warn)"></i>Type II observation window</span>
+        <span><i style="background:var(--crit);transform:rotate(45deg) scale(.8)"></i>Milestone</span>
+      </div>
+      <div class="more">
+        <a href="https://github.com/revoice1/BC-RV-Work-Trial#decision-soc-2-type-ii-observation-window">Why the window starts mid-January</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="workstreams">
+    <div class="wrap">
+      <div class="head"><p class="eyebrow">5 · Workstreams</p><h2>What each one delivers</h2></div>
+      <div class="ws-list">
+        <div class="ws-item">
+          <div class="ws-no">02</div>
+          <div><h3>MDM re-enrollment</h3><span class="pill">Prerequisite</span></div>
+          <div>
+            <ul>
+              <li>Four paths, least disruptive first: Apple deadline migration, Iru script via JumpCloud, CrowdStrike RTR, hands-on</li>
+              <li>Keys re-escrowed in Iru; JumpCloud agent kept until health is confirmed</li>
+              <li>Mac and Windows end-user guides; per-device tracker and daily rollup</li>
+            </ul>
+            <div class="ws-links">
+              <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/02-mdm-reenrollment/PLAN.md#migration-paths">Migration paths</a>
+              <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/02-mdm-reenrollment/migration-status.md">Status snapshot</a>
+              <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/02-mdm-reenrollment/user-guide-mac-migration.md">Mac guide</a>
+            </div>
+          </div>
+        </div>
+        <div class="ws-item">
+          <div class="ws-no">03</div>
+          <div><h3>Identity / SSO migration</h3><span class="pill">Core project</span></div>
+          <div>
+            <ul>
+              <li>Built in prod (net new, no impact until activation); sandbox backported after launch</li>
+              <li>Groups rebuilt from Rippling attributes; admin groups stay manual with approval</li>
+              <li>Per-app runbook: match NameID, SSO + SCIM, enforce SSO-only, roll back to Keycloak</li>
+            </ul>
+            <div class="ws-links">
+              <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/03-identity-sso-migration/PLAN.md">Plan</a>
+              <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/03-identity-sso-migration/docs/okta-tenant-setup.md">Tenant &amp; policy</a>
+              <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/03-identity-sso-migration/docs/group-migration.md">Groups</a>
+              <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/app-inventory.md">App inventory</a>
+            </div>
+          </div>
+        </div>
+        <div class="ws-item">
+          <div class="ws-no">04</div>
+          <div><h3>HR-driven lifecycle</h3><span class="pill">Goes live with Okta</span></div>
+          <div>
+            <ul>
+              <li>Rippling creates users up to 4 days early; a pre-start group, excluded from every rule, holds limited access</li>
+              <li>Offboarding runs on Okta deactivation, so a manual deactivation gets the full Google cleanup too</li>
+              <li>Apps without SCIM get a deprovisioning task to their owner</li>
+            </ul>
+            <div class="ws-links">
+              <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/04-hris-lifecycle-automation/PLAN.md">Lifecycle plan</a>
+              <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/04-hris-lifecycle-automation/PLAN.md#design-considerations-proposed">Design considerations</a>
+            </div>
+          </div>
+        </div>
+        <div class="ws-item">
+          <div class="ws-no">05</div>
+          <div><h3>Security gap assessment</h3><span class="pill">Parallel</span></div>
+          <div>
+            <ul>
+              <li>Ten fixes ranked by likelihood × impact, with audit exposure as the tie-breaker</li>
+              <li>Evidence comes from the other workstreams; nothing is a guess</li>
+            </ul>
+            <div class="ws-links"><a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/05-security-gap-assessment/PLAN.md">Gap assessment</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="decisions">
+    <div class="wrap">
+      <div class="head"><p class="eyebrow">6 · Decisions</p><h2>The calls, and why</h2></div>
+      <div class="table-scroll">
+        <table class="decisions">
+          <thead><tr><th>Decision</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Keycloak → Okta</td><td>We owned the outage's root cause. A managed IdP removes the single point of failure and adds HR-driven lifecycle and attribute-based access.</td></tr>
+            <tr><td>SOC 2 scope sets Okta priority</td><td>SOC 2 apps first, then existing SSO apps (needed to retire Keycloak), then the rest.</td></tr>
+            <tr><td>MDM health gates Okta Verify</td><td>Okta Verify and device signals need managed, healthy devices.</td></tr>
+            <tr><td>Build Okta in prod</td><td>A net-new org has no impact until users activate. Preview orgs run Okta's next release and can mislead.</td></tr>
+            <tr><td>No separate admin accounts</td><td>Phishing-resistant MFA, admin console step-up, custom roles, and alerts cover the risk.</td></tr>
+            <tr><td>Device trust not on day 1</td><td>SOC 2 doesn't require it. Enforcing it mid-migration would lock out anyone MDM missed.</td></tr>
+            <tr><td>Google cutover all at once</td><td>A per-group cutover confuses users and support; for users it's just a different sign-in check.</td></tr>
+            <tr><td>Offboarding triggers on deactivation</td><td>Runs whether Rippling or IT deactivates the user.</td></tr>
+            <tr><td>Okta Workflows → Slack alerts; SIEM later</td><td>Fast to stand up. Log retention is handled separately, since Okta keeps only 90 days.</td></tr>
+            <tr><td>Type II window from mid-January</td><td>Keeps the deadline. Controls get stronger during the window, and every change is logged.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="gaps">
+    <div class="wrap">
+      <div class="head">
+        <p class="eyebrow">7 · Gap assessment</p>
+        <h2>Top 10 fixes before the audit</h2>
+        <p class="lead">Risk = likelihood × impact, out of 25. Week-1 quick wins remove most of the top three before the bigger projects land.</p>
+      </div>
+      <div class="table-scroll">
+        <table class="gap">
+          <thead><tr><th>#</th><th>Gap</th><th>SOC 2</th><th>Risk</th><th>First fix</th></tr></thead>
+          <tbody id="gap-rows"></tbody>
+        </table>
+      </div>
+      <div class="more"><a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/05-security-gap-assessment/PLAN.md#top-10">Evidence, owners, timing</a><a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/05-security-gap-assessment/PLAN.md#quick-wins-week-1">Week-1 checklist</a></div>
+    </div>
+  </section>
+
+  <section id="mvp">
+    <div class="wrap">
+      <div class="head"><p class="eyebrow">8 · Scope</p><h2>MVP before the audit, backlog after</h2></div>
+      <div class="table-scroll">
+        <table class="mvp">
+          <thead><tr><th>Area</th><th>MVP: before / during the window</th><th>After the audit</th></tr></thead>
+          <tbody>
+            <tr><td>Identity</td><td>Okta for all users; MFA everywhere, phishing-resistant for admins; Google and every Keycloak app moved; SOC 2 apps with SCIM where supported</td><td>Password-only apps (SSO, vaulting, or retire); sandbox backport; passwordless for everyone</td></tr>
+            <tr><td>Groups</td><td>Access and org groups rebuilt in Okta; admin members approved one by one</td><td>Google collaboration group cleanup; finer team groups</td></tr>
+            <tr><td>Lifecycle</td><td>Rippling-driven joiner and leaver; terminated-user sweep done</td><td>Mover and rehire flows; contractors into Rippling; access request tooling</td></tr>
+            <tr><td>Devices</td><td>≥ 95% healthy in Iru; EDR everywhere; keys escrowed</td><td>Device trust on the sensitive tier; desktop MFA; local admin cleanup</td></tr>
+            <tr><td>Monitoring</td><td>365-day log retention for both IdPs; Slack alerts</td><td>SIEM</td></tr>
+            <tr><td>Process</td><td>First access review; IR plan; tested break-glass; control change log</td><td>Recurring tabletops; standing shadow-IT discovery</td></tr>
+            <tr><td>Decommission</td><td>Keycloak frozen with no apps</td><td>Keycloak shut down after its log check; JumpCloud retired</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="rule"><strong>Rule of thumb:</strong> if an auditor will test it during the window, or it removes the risk that caused the outage, it's MVP.</p>
+    </div>
+  </section>
+
+  <section id="dig-in">
+    <div class="wrap">
+      <div class="head"><p class="eyebrow">9 · Dig in</p><h2>Detailed plans and artifacts</h2></div>
+      <div class="dig">
+        <a href="https://github.com/revoice1/BC-RV-Work-Trial"><b>Repository</b><span>README with walkthrough, decisions, timeline</span></a>
+        <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/app-inventory.md"><b>App inventory</b><span>SOC 2 scope, Okta priority, SCIM, assignment review</span></a>
+        <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/03-identity-sso-migration/docs/identity-reconciliation.md"><b>Identity reconciliation</b><span>Rippling vs. Keycloak: who HR doesn't know about</span></a>
+        <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/03-identity-sso-migration/docs/rippling-okta-integration.md"><b>Rippling → Okta</b><span>Schema mapping and lifecycle events</span></a>
+        <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/03-identity-sso-migration/user-guide-okta-setup.md"><b>Okta setup guide</b><span>What employees see on activation day</span></a>
+        <a href="https://github.com/revoice1/BC-RV-Work-Trial/blob/main/03-identity-sso-migration/scripts/Get-OktaManagedDeviceReport.ps1"><b>Managed device report</b><span>PowerShell coverage report, with a demo mode</span></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Figures, apps, and dates are sample data for illustration. Source: <a href="https://github.com/revoice1/BC-RV-Work-Trial">github.com/revoice1/BC-RV-Work-Trial</a></div>
+</footer>
+
+<script>
+(function () {
+  // ---- Gantt ----
+  var start = new Date("2026-11-16"), end = new Date("2027-04-24");
+  var span = end - start;
+  function pct(d) { return ((new Date(d) - start) / span * 100).toFixed(2) + "%"; }
+  function addDays(d, n) { var x = new Date(d); x.setUTCDate(x.getUTCDate() + n); return x; }
+  var rows = [
+    { g: "01 Incident" },
+    { l: "Outage response + postmortem", s: "2026-11-16", d: 7 },
+    { g: "02 MDM" },
+    { l: "Fleet audit", s: "2026-11-23", d: 7 },
+    { l: "Re-enroll + remediate", s: "2026-11-30", d: 21 },
+    { g: "03 Identity" },
+    { l: "Phase 1 discovery", s: "2026-11-23", d: 21 },
+    { l: "Phase 2 Okta foundation", s: "2026-12-14", d: 21 },
+    { l: "Phase 3 activation", s: "2027-01-04", d: 16 },
+    { l: "Phase 4 Google cutover", m: "2027-01-25" },
+    { l: "Phase 4 app cutovers", s: "2027-01-26", d: 35 },
+    { l: "Phase 5 Keycloak on ice", s: "2027-03-02", d: 30, soft: true },
+    { g: "04 HR lifecycle" },
+    { l: "Rippling → Okta live", s: "2026-12-21", d: 14 },
+    { g: "05 Gap assessment" },
+    { l: "Assessment + ranked fixes", s: "2026-11-23", d: 21 },
+    { l: "Remediation", s: "2026-12-14", d: 84 },
+    { g: "SOC 2" },
+    { l: "Type II observation window", s: "2027-01-16", d: 90, win: true },
+    { l: "Audit deadline", m: "2027-04-16" }
+  ];
+  var el = document.getElementById("gantt");
+  var ticks = ["2026-12-01", "2027-01-01", "2027-02-01", "2027-03-01", "2027-04-01"];
+  var names = ["Dec", "Jan", "Feb", "Mar", "Apr"];
+  var html = '<div class="g-axis"><div class="g-label" style="color:var(--muted);font-size:.78rem">Nov 16 kickoff</div><div class="g-track">';
+  ticks.forEach(function (t, i) { html += '<span class="g-tick" style="left:' + pct(t) + '">' + names[i] + "</span>"; });
+  html += "</div></div>";
+  rows.forEach(function (r) {
+    if (r.g) { html += '<div class="g-row"><div class="g-group">' + r.g + '</div><div class="g-track"></div></div>'; return; }
+    html += '<div class="g-row"><div class="g-label" title="' + r.l + '">' + r.l + '</div><div class="g-track">';
+    if (r.m) {
+      html += '<span class="g-ms" style="left:' + pct(r.m) + '" title="' + r.l + ": " + r.m + '"></span>';
+    } else {
+      var e = addDays(r.s, r.d);
+      var w = ((e - new Date(r.s)) / span * 100).toFixed(2) + "%";
+      html += '<span class="g-bar' + (r.soft ? " soft" : "") + (r.win ? " win" : "") + '" style="left:' + pct(r.s) + ";width:" + w + '" title="' + r.l + '"></span>';
+    }
+    html += "</div></div>";
+  });
+  el.innerHTML = html;
+
+  // ---- Gap table ----
+  var gaps = [
+    ["Departed users still have access", "CC6.2 CC6.3", 25, "Sweep and disable every terminated account; HR-driven offboarding"],
+    ["IdP is a single point of failure with no owner", "CC7.2 A1.2", 20, "Monitor every Keycloak certificate and name an owner; migrate to Okta"],
+    ["Password-only and shared logins on in-scope apps", "CC6.1", 16, "App-native MFA; shared credentials into 1Password and rotated"],
+    ["Excess privilege", "CC6.1 CC6.3", 15, "Remove non-engineers from AWS admin; scope Datadog to Engineering"],
+    ["No tested break-glass or admin recovery", "CC7.5 A1.2", 15, "Second AWS root key off-site; second GitHub owner and Google super admin"],
+    ["No periodic access reviews", "CC6.2 CC6.3", 12, "First review with app owners, then quarterly"],
+    ["Logs not kept long enough; no alerting", "CC7.2", 12, "365-day log storage; Okta Workflows → Slack alerts"],
+    ["Endpoint gaps", "CC6.8 CC6.7", 12, "Finish MDM migration; chase every EDR gap"],
+    ["Incident response not documented or tested", "CC7.3–7.5", 9, "IR plan, out-of-band comms, one tabletop"],
+    ["Audit scope not settled; inventory incomplete", "CC2.1 CC3.2", 9, "Compliance decides 4 pending apps; password-app discovery"]
+  ];
+  var tb = document.getElementById("gap-rows"), out = "";
+  gaps.forEach(function (g, i) {
+    out += "<tr><td>" + (i + 1) + "</td><td>" + g[0] + '</td><td class="soc">' + g[1] + '</td><td><div class="risk"><div class="risk-bar"><span class="' + (g[2] < 15 ? "m" : "") + '" style="width:' + (g[2] / 25 * 100) + '%"></span></div><b>' + g[2] + "</b></div></td><td>" + g[3] + "</td></tr>";
+  });
+  tb.innerHTML = out;
+
+  // ---- Active section in nav ----
+  var links = Array.prototype.slice.call(document.querySelectorAll(".toc a"));
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        links.forEach(function (a) { a.classList.toggle("on", a.getAttribute("href") === "#" + en.target.id); });
+      });
+    }, { rootMargin: "-40% 0px -55% 0px" });
+    document.querySelectorAll("main section[id]").forEach(function (s) { io.observe(s); });
+  }
+})();
+</script>
+
+</body>
+</html>
