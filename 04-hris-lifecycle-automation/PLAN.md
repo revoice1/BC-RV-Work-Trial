@@ -9,7 +9,7 @@
 | --- | --- | --- |
 | **Pre-hire** | Rippling creates the user, up to 4 days before start date | Okta Workflow puts them in a **Pre-start Limited Access** group, excluded from all group rules |
 | **Day 1** | Start date reached | Workflow removes them from the limited group, so group rules grant birthright access |
-| **Leaver** | Rippling termination suspends the Okta user | Workflow deactivates Okta and offboards Google (data transfer, archive, mail continuity) |
+| **Leaver** | Rippling termination suspends the Okta user | Workflow deactivates the Okta user. **Okta deactivation** (from any source) triggers Google offboarding: data transfer, archive, mail continuity |
 | **Leaver + 90 days** | Scheduled | Workflow notifies, then cleans up the leaver's mail-continuity group |
 
 Attribute mapping from Rippling to Okta: [rippling-okta-integration.md](../03-identity-sso-migration/docs/rippling-okta-integration.md#schema-mapping). The leaver Workflow uses the **`managerEmail`** attribute to find who receives Drive, Calendar, and the mail-continuity DL.
@@ -54,13 +54,20 @@ _OPEN:_ which apps are in the limited group. Typical candidates: Rippling (onboa
 
 ## Leaver: Offboarding
 
-**Trigger:** a Rippling termination **suspends** the Okta user. The suspension event triggers the offboarding Workflow.
+Two Workflows, so the downstream steps run **however the user is deactivated**:
+
+| Workflow | Trigger | Action |
+| --- | --- | --- |
+| **A: Deactivate** | Okta **user suspended** (Rippling termination) | Deactivate the Okta user |
+| **B: Offboard** | Okta **user deactivated**, from Workflow A **or a manual deactivation** by IT | Google steps below |
+
+Because Workflow B keys off deactivation, an urgent termination where IT deactivates the user directly in Okta still gets the full offboarding.
 
 ### Actions
 
 | # | System | Action |
 | --- | --- | --- |
-| 1 | Okta | **Deactivate the user** (ends Okta sessions; SCIM-connected apps deprovision) |
+| 1 | Okta | **Deactivate the user** (Workflow A, or IT manually): ends Okta sessions; SCIM-connected apps deprovision |
 | 2 | Google | **Transfer Drive files** to the manager |
 | 3 | Google | **Transfer Calendar** to the manager |
 | 4 | Google | **Rename the email address**: append `archive` (e.g., `jane.doe@` → `jane.doe.archive@`) |
@@ -70,9 +77,11 @@ _OPEN:_ which apps are in the limited group. Typical candidates: Rippling (onboa
 ```mermaid
 flowchart TD
     A[Rippling termination] --> B[Rippling suspends Okta user]
-    B --> C[Okta Workflow: offboarding]
-    C --> D[Deactivate Okta user]
-    C --> E[Google: transfer Drive + Calendar to manager]
+    B --> C[Workflow A: deactivate Okta user]
+    M[IT manual deactivation<br/>e.g. urgent termination] --> D
+    C --> D[Okta user deactivated]
+    D --> W[Workflow B: offboard]
+    W --> E[Google: transfer Drive + Calendar to manager]
     E --> F[Google: rename email with archive]
     F --> G[Google: archive user]
     G --> H[Google: create hidden DL at original address,<br/>add manager]
@@ -97,10 +106,10 @@ These are the details most likely to bite. Each should be confirmed when the Wor
 
 | # | Consideration | Why it matters |
 | --- | --- | --- |
-| 1 | **Order of operations in offboarding.** If Okta's Google Workspace app is set to deprovision users on deactivation, deactivating Okta **first** may suspend or delete the Google user **before** the Drive/Calendar transfer runs **[verify]** | Data loss for the manager. Either do the Google steps first and deactivate Okta last, or let the Workflow own Google offboarding and turn off Google deprovisioning in the Okta app |
+| 1 | **Google deprovisioning in the Okta app.** Workflow B runs **after** deactivation by design. If Okta's Google Workspace app also deprovisions on deactivation, it could delete the Google user before the Drive/Calendar transfer runs **[verify]** | Data loss for the manager. Workflow B owns Google offboarding: set the Okta app's deprovisioning to suspend at most, never delete |
 | 2 | **Freeing the original address.** Google typically keeps the old address as an **alias** after a rename **[verify]**. The alias must be removed before a group can be created with that address | Otherwise step 6 fails |
 | 3 | **Google sessions.** Deactivating Okta ends Okta sessions, but an existing Google session can live on | Add a step: sign the user out of Google and revoke app tokens/app passwords |
-| 4 | **Urgent terminations.** The Workflow triggers on **suspension**. If IT manually **deactivates** in Okta during an urgent termination, the Google steps won't run | The urgent-termination runbook should be: terminate in Rippling immediately (or suspend in Okta), so the same Workflow runs |
+| 4 | **Urgent terminations.** Handled by design: IT can deactivate directly in Okta and Workflow B still runs. Rippling must still be updated afterward | Otherwise Rippling and Okta disagree, and the next sync could try to reactivate the user **[verify]** |
 | 5 | **Pre-start timing.** When does the "start date has passed" check run, and in which time zone? | A daily run at the wrong hour gives a new hire in another time zone no access on their first morning. Run it early (or hourly) in the earliest company time zone |
 | 6 | **Start date changes.** Rippling start dates move (offer delays, early starts) | The pre-start Workflow must re-read the start date, not just act once at creation |
 | 7 | **Pre-start group exclusion.** Every *new* group rule must also exclude the limited group | Add it to the group-rule checklist; one missed rule leaks birthright access early |
@@ -114,7 +123,8 @@ These are the details most likely to bite. Each should be confirmed when the Wor
 | New hire activates and sets password before start date | Sees only the limited apps |
 | Start date passes | Removed from limited group; birthright groups and apps assigned |
 | Start date moved later in Rippling | Stays in the limited group until the new date |
-| Rippling termination | Okta user suspended → Workflow runs → all 6 actions complete |
+| Rippling termination | Okta user suspended → Workflow A deactivates → Workflow B runs → all 6 actions complete |
+| IT manually deactivates a user in Okta | Workflow B runs → all Google steps complete |
 | Mail to the leaver's original address | Delivered to the manager via the hidden DL; DL not visible in the address list |
 | DL at 76 days | Members notified |
 | DL at 90 days, not extended | Deleted |

@@ -51,7 +51,7 @@ flowchart LR
 | Mover | Dept / title / manager change | Attributes update → group rules re-evaluate → access added/removed |
 | Leave of absence | Status = leave | Decide with Security: suspend vs. keep active _OPEN_ |
 | Planned termination | Rippling termination | Rippling **suspends** Okta user → offboarding Workflow deactivates Okta + offboards Google. See [04 ULM](../../04-hris-lifecycle-automation/PLAN.md#leaver-offboarding) |
-| Urgent termination | Same-day / involuntary | Terminate in Rippling immediately, or **suspend** in Okta, so the same offboarding Workflow runs. A manual *deactivation* would skip the Google steps |
+| Urgent termination | Same-day / involuntary | **Deactivate in Okta immediately**; offboarding Workflow B triggers on deactivation, so Google steps still run. Then terminate in Rippling so the two stay in sync |
 | Rehire | Returning employee | Reactivate existing Okta user (same `employeeNumber`), don't create a duplicate |
 | Contractor | _OPEN_: in Rippling or not? | If not in Rippling, needs a separate Okta-mastered process with a required end date |
 
