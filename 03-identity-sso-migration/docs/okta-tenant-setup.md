@@ -5,7 +5,11 @@
 
 ## 1. Tenant Setup
 
-- **Orgs:** production org + a preview/sandbox org. Every policy and integration change is tested in preview first.
+- **Orgs: build in prod, backport to sandbox after launch.**
+  - **Why prod first:** the org is net new, so until real users are activated there's **no impact** from building there. Building a sandbox first costs time we don't have, and preview orgs run Okta's **upcoming release**, so results there can differ from prod (false positives).
+  - **The "no impact" window ends** at the first of: Rippling syncing real users, activation emails going out, or any app/Google sign-in pointing at Okta. Those steps are deliberate, scheduled changes.
+  - **After launch:** backport the prod configuration into a sandbox org and use it for testing changes. Still check results against prod behavior, since the sandbox runs ahead of prod.
+  - **Test accounts in prod** are named and tagged as test accounts, tracked, and deactivated (or kept tagged and excluded from access reviews by documented exception) after launch. Untracked test accounts with access are an audit finding.
 - **Custom domain:** e.g., `login.ailense.com`, so users learn one trusted URL (phishing awareness).
 - **Branding:** company sign-in page and email templates, so Okta emails don't look like phishing.
 - **Admin roles:** least privilege from day one.
@@ -81,7 +85,7 @@ Admins use **their regular Okta account**, with admin roles assigned to it. Sepa
 
 ### Policy testing (proposed)
 
-Every policy is built and tested in the **preview org** first, then promoted to prod and re-tested with the same cases. Test users cover each persona: standard employee, contractor, admin, break-glass.
+Every policy is built and tested **in prod with dedicated test users**, before any real user is activated. Test users cover each persona: standard employee, contractor, admin, break-glass. After launch, policy changes are tested in the backported sandbox first, then re-run against prod with these same cases.
 
 | Test | Expected result |
 | --- | --- |
@@ -154,7 +158,7 @@ flowchart LR
 | 2 | Create certificate (SCEP) profiles for macOS and Windows pointing at Okta | Iru | Before MDM wave 2 | Not started |
 | 3 | Deploy Okta Verify with managed configuration (org URL) | Iru | Before MDM wave 2 | Not started |
 | 4 | Define Device Assurance policies (OS version, disk encryption, screen lock) **matching Iru's compliance policies**, so the two systems don't disagree about what "healthy" means | Okta + Iru | Phase 2 | Not started |
-| 5 | Test in preview: managed device passes, unmanaged/personal device blocked from a sensitive-tier test app | Okta preview | Phase 2 | Not started |
+| 5 | Test with a test user: managed device passes, unmanaged/personal device blocked from a sensitive-tier test app | Okta prod (test users) | Phase 2 | Not started |
 | 6 | Measure: users with a managed device ([Get-OktaManagedDeviceReport.ps1](../scripts/Get-OktaManagedDeviceReport.ps1)) vs. devices healthy in Iru ([device tracker](../../02-mdm-reenrollment/device-tracker.csv)); investigate gaps | Okta + Iru | During activation | Not started |
 | 7 | Enforce managed device on the sensitive tier once coverage target is met | Okta | Post-migration | Not started |
 

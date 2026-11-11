@@ -57,7 +57,7 @@ flowchart LR
 
 ## Configuration Best Practices
 
-1. **Build in a non-production Okta org first** (Okta preview/sandbox org) with test users before touching production.
+1. **Build in prod, carefully.** The Okta org is net new (see [tenant setup](okta-tenant-setup.md#1-tenant-setup)), but connecting Rippling is the step that brings real people in. Test the mapping with test users first, and keep users from being activated or emailed until validation is done.
 2. **Disable automatic activation emails** before the first sync. A misconfigured first sync can email 400 people at once.
 3. **Run a reconciliation before go-live:** compare the Rippling export against Keycloak users ([identity-reconciliation.md](identity-reconciliation.md)). Fix name/email mismatches in Rippling first, and decide what happens to identities HR doesn't manage.
 4. **Link, don't duplicate:** existing Google accounts must match the Rippling-created Okta users by email when the Okta → Google Workspace app is connected. Check matches in the import screen before confirming anything.
@@ -70,7 +70,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    A[Configure in preview org with test users] --> B[Reconcile Rippling vs Keycloak + Google data]
+    A[Configure in prod with test users] --> B[Reconcile Rippling vs Keycloak + Google data]
     B --> C[Fix mismatches in Rippling]
     C --> D[Connect to prod Okta: activation emails OFF]
     D --> E[Initial sync: users created Staged]

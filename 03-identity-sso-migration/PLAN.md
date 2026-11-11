@@ -65,8 +65,8 @@ flowchart LR
 
 | Step | Summary | Detail |
 | --- | --- | --- |
-| **2.1 Tenant & admin setup** | Prod + preview orgs, custom domain, branding, least-privilege admin roles (no separate admin accounts; compensating controls), initial org Super Admin as break-glass | [okta-tenant-setup.md §1–2](docs/okta-tenant-setup.md#1-tenant-setup) |
-| **2.2 Sign-in & app policy creation and testing** | Workshop with Security/Compliance (password, authenticators, session, app sign-in tiers, recovery, logging), then test every policy with test users in preview before prod | [okta-tenant-setup.md §3](docs/okta-tenant-setup.md#3-policy-setup-with-securitycompliance) |
+| **2.1 Tenant & admin setup** | Build directly in prod (net new, no impact until users are activated); backport to a sandbox org after launch; custom domain, branding, least-privilege admin roles (no separate admin accounts; compensating controls), initial org Super Admin as break-glass | [okta-tenant-setup.md §1–2](docs/okta-tenant-setup.md#1-tenant-setup) |
+| **2.2 Sign-in & app policy creation and testing** | Workshop with Security/Compliance (password, authenticators, session, app sign-in tiers, recovery, logging), then test every policy with test users in prod before any real user is activated | [okta-tenant-setup.md §3](docs/okta-tenant-setup.md#3-policy-setup-with-securitycompliance) |
 | **2.3 Rippling integration & profile sourcing** | Rippling becomes the source of truth for user profiles in Okta: schema mapping, lifecycle events, users created Staged | [rippling-okta-integration.md](docs/rippling-okta-integration.md) |
 | **2.4 Keycloak comparison** | Compare Rippling-sourced profiles to Keycloak to find identities HR doesn't manage (contractors, service accounts, shared accounts) and decide which to pull over | [identity-reconciliation.md](docs/identity-reconciliation.md) |
 

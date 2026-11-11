@@ -38,7 +38,7 @@ flowchart TD
 | **Keycloak only: contractor** | Agency contractor not in Rippling | Pull over as an **Okta-mastered user** with a sponsor (manager), `userType = Contractor`, and a **required end date**. Long-term: add contractors to Rippling |
 | **Keycloak only: service account** | `svc-ci`, integration users | Don't migrate as a person. Find the owner; replace with an app-native service account or API token. If it must exist in Okta, tag it as a service account with an owner and exclude it from human MFA/lifecycle rules |
 | **Keycloak only: shared account** | `support@`, team logins | **Eliminate.** Give individuals their own access via groups (same problem as Mailchimp/Zendesk in the [app inventory](../../app-inventory.md)) |
-| **Keycloak only: test account** | `test-user1` | Don't migrate. Recreate test users in the Okta preview org |
+| **Keycloak only: test account** | `test-user1` | Don't migrate. Create fresh, clearly tagged test users in Okta for launch testing ([tenant setup](okta-tenant-setup.md#1-tenant-setup)) |
 | **Keycloak only: unknown** | No owner identifiable | Disable in Keycloak; delete after 30 days if nobody claims it **(proposed)** |
 
 ## Output
