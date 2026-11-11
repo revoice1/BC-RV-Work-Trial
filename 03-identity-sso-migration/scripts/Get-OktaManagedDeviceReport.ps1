@@ -15,19 +15,26 @@
     Used to measure coverage before enforcing managed-device policies
     (see ../docs/okta-tenant-setup.md, "Iru + Okta device management integration").
 
-    Read-only. Use a token from an account or service app with a read-only admin
-    role. [verify] Device API response shape (_embedded.users[].managementStatus)
-    against current Okta docs before relying on results.
+    Built on the Okta-Functions.ps1 library (Invoke-OktaAPI handles auth, paging,
+    and rate limits; this script uses Get-OktaUsers and Get-OktaDevices):
+    https://github.com/revoice1/Things-and-stuff/blob/master/Function-Libraries/Okta-Functions.ps1
 
-.PARAMETER OktaDomain
-    Okta org domain, e.g. ailense.okta.com (or the custom domain).
+    Read-only. Use an API token from an account with a read-only admin role.
+    [verify] Device API response shape (_embedded.users[].managementStatus with
+    expand=user) against current Okta docs before relying on results.
 
-.PARAMETER ApiToken
-    Okta API token (SSWS). Read from $env:OKTA_API_TOKEN if not supplied.
+.PARAMETER SubDomain
+    Okta org subdomain, e.g. "ailense" for ailense.okta.com.
 
-.PARAMETER AccessToken
-    OAuth 2.0 bearer token from an Okta service app (preferred over an API token).
-    Needs okta.users.read and okta.devices.read scopes.
+.PARAMETER Environment
+    Production (okta.com) or Preview (oktapreview.com).
+
+.PARAMETER Token
+    Okta API token, as a SecureString or string. Defaults to $OktaToken (the
+    library's convention); prompts securely if neither is set.
+
+.PARAMETER FunctionLibraryPath
+    Path to Okta-Functions.ps1. Defaults to the same folder as this script.
 
 .PARAMETER Platforms
     Device platforms that count. Defaults to desktops managed by Iru.
@@ -39,27 +46,33 @@
     Optional per-device CSV for investigating gaps.
 
 .PARAMETER Demo
-    Run against built-in sample data. No Okta connection needed.
+    Run against built-in sample data. No Okta connection or library needed.
 
 .EXAMPLE
     ./Get-OktaManagedDeviceReport.ps1 -Demo
 
 .EXAMPLE
-    $env:OKTA_API_TOKEN = '<token>'
-    ./Get-OktaManagedDeviceReport.ps1 -OktaDomain ailense.okta.com -DevicePath .\devices.csv
+    $OktaToken = Read-Host -AsSecureString 'Okta API token'
+    ./Get-OktaManagedDeviceReport.ps1 -SubDomain ailense -DevicePath .\devices.csv
+
+.EXAMPLE
+    ./Get-OktaManagedDeviceReport.ps1 -SubDomain ailense -Environment Preview
 #>
 #Requires -Version 7.0
-[CmdletBinding(DefaultParameterSetName = 'ApiToken')]
+[CmdletBinding(DefaultParameterSetName = 'Okta')]
 param(
-    [Parameter(Mandatory, ParameterSetName = 'ApiToken')]
-    [Parameter(Mandatory, ParameterSetName = 'AccessToken')]
-    [string] $OktaDomain,
+    [Parameter(Mandatory, ParameterSetName = 'Okta')]
+    [string] $SubDomain,
 
-    [Parameter(ParameterSetName = 'ApiToken')]
-    [string] $ApiToken = $env:OKTA_API_TOKEN,
+    [Parameter(ParameterSetName = 'Okta')]
+    [ValidateSet('Production', 'Preview')]
+    [string] $Environment = 'Production',
 
-    [Parameter(Mandatory, ParameterSetName = 'AccessToken')]
-    [string] $AccessToken,
+    [Parameter(ParameterSetName = 'Okta')]
+    $Token = $OktaToken,
+
+    [Parameter(ParameterSetName = 'Okta')]
+    [string] $FunctionLibraryPath = (Join-Path $PSScriptRoot 'Okta-Functions.ps1'),
 
     [string[]] $Platforms = @('MACOS', 'WINDOWS'),
 
@@ -72,39 +85,6 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-
-function Invoke-OktaPagedGet {
-    <# GETs every page of an Okta collection, following Link rel="next" and backing off on 429. #>
-    param([string] $Uri, [hashtable] $Headers)
-
-    $results = [System.Collections.Generic.List[object]]::new()
-    $next = $Uri
-    while ($next) {
-        try {
-            $response = Invoke-WebRequest -Uri $next -Headers $Headers -Method Get
-        }
-        catch {
-            $status = $_.Exception.Response.StatusCode.value__
-            if ($status -eq 429) {
-                $reset = [int64]($_.Exception.Response.Headers.GetValues('X-Rate-Limit-Reset') | Select-Object -First 1)
-                $wait = [Math]::Max(1, $reset - [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + 1)
-                Write-Warning "Rate limited by Okta. Waiting $wait s."
-                Start-Sleep -Seconds $wait
-                continue
-            }
-            throw
-        }
-
-        $page = $response.Content | ConvertFrom-Json -Depth 20
-        foreach ($item in $page) { $results.Add($item) }
-
-        $next = $null
-        foreach ($link in @($response.Headers['Link'])) {
-            if ($link -match '<([^>]+)>;\s*rel="next"') { $next = $Matches[1] }
-        }
-    }
-    return $results
-}
 
 function Get-DemoData {
     <# Small, deliberately mixed sample: managed, personal device only, no device, multiple devices. #>
@@ -151,19 +131,20 @@ if ($Demo) {
     $devices = $data.Devices
 }
 else {
-    if ($PSCmdlet.ParameterSetName -eq 'ApiToken' -and -not $ApiToken) {
-        throw 'No Okta credential. Pass -ApiToken, set $env:OKTA_API_TOKEN, or use -AccessToken.'
+    if (-not (Test-Path $FunctionLibraryPath)) {
+        throw "Okta-Functions.ps1 not found at '$FunctionLibraryPath'. Download it from https://github.com/revoice1/Things-and-stuff/blob/master/Function-Libraries/Okta-Functions.ps1 or pass -FunctionLibraryPath."
     }
-    $auth = if ($AccessToken) { "Bearer $AccessToken" } else { "SSWS $ApiToken" }
-    $headers = @{ Authorization = $auth; Accept = 'application/json' }
-    $base = "https://$($OktaDomain.TrimEnd('/') -replace '^https?://', '')"
+    . $FunctionLibraryPath
 
-    Write-Host "Fetching active users from $base ..."
-    $filter = [uri]::EscapeDataString('status eq "ACTIVE"')
-    $users = Invoke-OktaPagedGet -Uri "$base/api/v1/users?filter=$filter&limit=200" -Headers $headers
+    if (-not $Token) { $Token = Read-Host -AsSecureString 'Okta API token' }
+    $okta = @{ SubDomain = $SubDomain; Environment = $Environment; Token = $Token }
+
+    Write-Host "Fetching active users from $SubDomain ($Environment) ..."
+    $users = @(Get-OktaUsers @okta -Filter 'status eq "ACTIVE"' -limit 200)
 
     Write-Host 'Fetching devices ...'
-    $devices = Invoke-OktaPagedGet -Uri "$base/api/v1/devices?expand=user&limit=200" -Headers $headers
+    # expand=user (not the library default userSummary) so the user's department is included
+    $devices = @(Get-OktaDevices @okta -expand 'user' -limit 200)
 }
 
 # ---- Classify -------------------------------------------------------------
