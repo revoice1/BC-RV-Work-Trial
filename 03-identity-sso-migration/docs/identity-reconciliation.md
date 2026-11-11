@@ -1,6 +1,6 @@
 # Identity Reconciliation: Rippling vs. Keycloak
 
-> Phase 2.4 of the [IdP migration plan](../PLAN.md#phase-2-foundation). Items marked **(proposed)** are for discussion.
+> Phase 2.4 of the [IdP migration plan](../PLAN.md#phase-2-foundation). Items marked **(proposed)** are recommended values to confirm with Security.
 
 ## Why
 
@@ -47,8 +47,7 @@ A reconciliation report with every identity, its category, decision, owner, and 
 
 **SOC 2 value:** the report is evidence that every identity with access is known, owned, and authorized (CC6.1, CC6.2), and the terminated-but-active findings show the gap the new lifecycle closes (CC6.3).
 
-## _OPEN_
+## Decisions to Confirm
 
 - Who approves contractor and service account pull-overs (Security? Manager?)
 - Grace period before deleting unclaimed accounts
-- Hands-on slice: a reconciliation script that takes both exports and produces the report

@@ -1,7 +1,7 @@
 # User Lifecycle Management: Rippling → Okta → Apps
 
-> **Status:** Working draft. Describes the joiner and leaver automation that goes live with Okta ([03 IdP migration](../03-identity-sso-migration/PLAN.md)).
-> Items marked **(proposed)** are additions for discussion; **[verify]** = confirm against current vendor docs.
+> Joiner and leaver automation that goes live with Okta ([03 IdP migration](../03-identity-sso-migration/PLAN.md)).
+> Items marked **(proposed)** are recommended values to confirm with stakeholders; **[verify]** = confirm against vendor docs during the build.
 
 ## Overview
 
@@ -50,7 +50,7 @@ sequenceDiagram
 
 ### Pre-start apps
 
-_OPEN:_ which apps are in the limited group. Typical candidates: Rippling (onboarding paperwork, benefits), the Okta dashboard itself, security awareness training.
+**To confirm:** which apps are in the limited group. Typical candidates: Rippling (onboarding paperwork, benefits), the Okta dashboard itself, security awareness training.
 
 ## Leaver: Offboarding
 
@@ -135,7 +135,7 @@ These are the details most likely to bite. Each should be confirmed when the Wor
 - **CC6.2 (provisioning):** access is granted from HR records via group rules, not ad hoc requests. Pre-start access is limited by design.
 - **CC6.3 (removal):** termination in Rippling removes access automatically. Workflow run history is the evidence of **timely deprovisioning**. Export it, since run history retention is limited **[verify]**.
 
-## _OPEN_
+## Decisions to Confirm
 
 - Pre-start app list
 - **Mover** flow: department/manager changes re-evaluate group rules automatically; does anything else need to happen (e.g., Drive ownership, access review)?

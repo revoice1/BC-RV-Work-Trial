@@ -1,6 +1,6 @@
 # MDM Re-enrollment Plan: JumpCloud → Iru
 
-> **Status:** Working draft. Items marked **(proposed)** are additions for discussion; **[verify]** = confirm against current vendor docs.
+> Items marked **(proposed)** are recommended values to confirm with stakeholders; **[verify]** = confirm against vendor docs during the build.
 
 ## Context & Scope
 
@@ -117,10 +117,7 @@ Track per device: path, wave, status (not started → in progress → migrated �
 - **Device tracker:** [device-tracker.csv](device-tracker.csv) (mock, one row per device; opens in Excel or Google Sheets)
 - **Status snapshot:** [migration-status.md](migration-status.md) (mock mid-migration rollup: by status, path, platform, department, and top blockers)
 
-## _OPEN_
+## Decisions to Confirm
 
-- Fleet size and macOS/Windows split
-- Share of Macs in Apple Business Manager and on a supported macOS version
 - Deadline length for Path 1 (how long users get before it's enforced)
-- When to decommission JumpCloud (it's also used for other things? e.g., directory, local accounts)
-- Hands-on slice: compliance script or config profile, which platform
+- When to decommission JumpCloud, after confirming nothing else depends on it (directory, local accounts)

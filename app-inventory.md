@@ -1,6 +1,6 @@
 # App Inventory
 
-> **MOCK DATA:** Illustrative sample for planning purposes.
+> **Sample data** for illustration.
 > Shared by every workstream: [01 postmortem](01-incident-response/postmortem.md) (impact), [03 IdP migration](03-identity-sso-migration/PLAN.md) (what moves to Okta and in what order), 04 HR lifecycle (group rules), 05 gap assessment (access findings).
 
 ## Inventory Completeness

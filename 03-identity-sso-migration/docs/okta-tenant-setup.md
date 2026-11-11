@@ -162,7 +162,7 @@ flowchart LR
 | 6 | Measure: users with a managed device ([Get-OktaManagedDeviceReport.ps1](../scripts/Get-OktaManagedDeviceReport.ps1)) vs. devices healthy in Iru ([device tracker](../../02-mdm-reenrollment/device-tracker.csv)); investigate gaps | Okta + Iru | During activation | Not started |
 | 7 | Enforce managed device on the sensitive tier once coverage target is met | Okta | Post-migration | Not started |
 
-## _OPEN_
+## Decisions to Confirm
 
 - Final session and password values (policy workshop)
 - Help desk identity verification procedure

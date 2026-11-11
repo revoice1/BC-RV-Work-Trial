@@ -1,6 +1,6 @@
 # Security Gap Assessment: Top 10 Fixes Before the SOC 2 Audit
 
-> **Status:** Working draft. Findings come from the other workstreams (linked as evidence); scores are proposed for review with Security/Compliance.
+> Findings come from the other workstreams (linked as evidence); scores are proposed for review with Security/Compliance.
 > Runs **in parallel** with the [IdP migration](../03-identity-sso-migration/PLAN.md) and fills time while waiting on app owners.
 
 ## Method
@@ -74,7 +74,7 @@ Low-effort fixes that remove the most risk immediately, before the bigger projec
 | Local admin rights on laptops | Not yet measured; add to MDM health data, then re-score |
 | Vendor risk management (SOC 2 reports from key vendors) | Likely an audit request; not assessed here. Flag for Compliance |
 
-## _OPEN_
+## Decisions to Confirm
 
 - Confirm scores and owners with Security/Compliance
 - Confirm the observation window start date (drives every "before window" deadline)

@@ -1,8 +1,6 @@
 # AiLense: SOC 2 Readiness & Identity Modernization
 
-Work trial response. Original prompts: [Prompt.jpg](Prompt.jpg).
-
-All five prompts are treated as **one connected program** at a single fictional startup, **AiLense**, rather than five separate exercises.
+Responses to the five prompts in [Prompt.jpg](Prompt.jpg), treated as **one connected program** at **AiLense** rather than five separate exercises.
 
 ## Walkthrough
 
@@ -68,17 +66,17 @@ flowchart TD
 
 ## Workstreams
 
-| # | Workstream | Prompt | Role in the program | Folder | Status |
-| --- | --- | --- | --- | --- | --- |
-| 01 | Incident response | Handle a 3-hour IdP outage | **Trigger:** postmortem makes the case for migrating | [01-incident-response](01-incident-response/postmortem.md) | Draft |
-| 02 | MDM re-enrollment | Re-enroll a mixed macOS/Windows fleet | **Prerequisite:** healthy fleet before Okta Verify | [02-mdm-reenrollment](02-mdm-reenrollment/PLAN.md) | Draft |
-| 03 | Identity/SSO migration | Migrate 400 people between IdPs, 5-month SOC 2 deadline | **Core project** | [03-identity-sso-migration](03-identity-sso-migration/PLAN.md) | Draft |
-| 04 | HRIS-driven lifecycle | HRIS-driven onboarding/offboarding flow | **Goes live with Okta**: joiner/leaver automation | [04-hris-lifecycle-automation](04-hris-lifecycle-automation/PLAN.md) | Draft |
-| 05 | Security gap assessment | Prioritize the top 5–10 fixes before an audit | **Parallel** with 03 | [05-security-gap-assessment](05-security-gap-assessment/PLAN.md) | Draft |
+| # | Workstream | Prompt | Role in the program | Folder |
+| --- | --- | --- | --- | --- |
+| 01 | Incident response | Handle a 3-hour IdP outage | **Trigger:** postmortem makes the case for migrating | [01-incident-response](01-incident-response/postmortem.md) |
+| 02 | MDM re-enrollment | Re-enroll a mixed macOS/Windows fleet | **Prerequisite:** healthy fleet before Okta Verify | [02-mdm-reenrollment](02-mdm-reenrollment/PLAN.md) |
+| 03 | Identity/SSO migration | Migrate 400 people between IdPs, 5-month SOC 2 deadline | **Core project** | [03-identity-sso-migration](03-identity-sso-migration/PLAN.md) |
+| 04 | HRIS-driven lifecycle | HRIS-driven onboarding/offboarding flow | **Goes live with Okta**: joiner/leaver automation | [04-hris-lifecycle-automation](04-hris-lifecycle-automation/PLAN.md) |
+| 05 | Security gap assessment | Prioritize the top 5–10 fixes before an audit | **Parallel** with 03 | [05-security-gap-assessment](05-security-gap-assessment/PLAN.md) |
 
 ## Proposed Timeline
 
-> **Draft, to be confirmed.** Assumes a Nov 16, 2026 kickoff and a SOC 2 deadline 5 months out.
+> Assumes a Nov 16, 2026 kickoff and a SOC 2 deadline 5 months out.
 
 ```mermaid
 gantt

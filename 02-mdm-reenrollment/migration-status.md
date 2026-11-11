@@ -1,6 +1,6 @@
 # MDM Migration Status: JumpCloud → Iru
 
-> **MOCK DATA** · Snapshot **Dec 10, 2026** · Source: [device-tracker.csv](device-tracker.csv) · Definition of healthy: [PLAN.md](PLAN.md#definition-of-healthy)
+> **Sample data** · Snapshot **Dec 10, 2026** · Source: [device-tracker.csv](device-tracker.csv) · Definition of healthy: [PLAN.md](PLAN.md#definition-of-healthy)
 
 ## Headline
 

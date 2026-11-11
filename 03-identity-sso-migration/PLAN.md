@@ -1,12 +1,12 @@
 # IdP Migration Plan: Self-hosted SAML (Keycloak) → Okta
 
-> **Status:** Working draft. Built from interview notes. Items marked _OPEN_ are unanswered.
+> Items marked **(proposed)** are recommended values to confirm with stakeholders; **[verify]** = confirm against vendor docs during the build.
 
 ## Context & Assumptions
 
 | Item | Value |
 | --- | --- |
-| Company | AiLense (fictional startup); see [program overview](../README.md) |
+| Company | AiLense; see [program overview](../README.md) |
 | Trigger | 3-hour outage of the current IdP: expired SAML signing certificate (see workstream 01) |
 | Company size | 400 users (per prompt) |
 | Source IdP | Self-hosted Keycloak (SAML); Google Workspace and other apps federate to it |
@@ -46,11 +46,9 @@
 - Inventory existing groups
 - Confirm Rippling is the HR source of truth and its data quality is good enough to source Okta profiles (without an HRIS, see the [appendix](#no-hr-source-of-truth))
 
-_OPEN:_
+**Groups:** redesigned around **attribute-driven group rules** (ABAC from Rippling attributes), not lifted and shifted. Hand-maintained groups are where the [assignment review](../app-inventory.md#assignment-review) found the most errors.
 
-- Inventory fields per app
-- Group strategy: lift-and-shift vs. redesign; attribute-driven group rules vs. manual
-- Timebox and exit criteria
+**Timebox:** 3 weeks ([timeline](../README.md#proposed-timeline)). **Exit criteria:** inventory signed off by app owners, SOC 2 scope confirmed by Compliance, SAML details captured for every SSO app, and the first [identity reconciliation](docs/identity-reconciliation.md) run.
 
 ### Phase 2: Foundation
 
@@ -172,7 +170,7 @@ flowchart TD
 2. Verify it against HR export data
 3. Write a script to import users into Okta
 
-_OPEN:_
+**Would need to be decided:**
 
 - What the HR export is in this case (spreadsheet, payroll system, etc.)
 - Import approach (CSV import vs. API script) and user activation strategy
@@ -180,8 +178,7 @@ _OPEN:_
 
 The mismatch handling and non-person account rules in [identity-reconciliation.md](docs/identity-reconciliation.md) apply here too.
 
-## Open Questions
+## Decisions to Confirm
 
 - Who makes the rollback call for an app cutover, and on what signal? **(proposed:** IT lead with the app owner, if users still can't sign in after a set troubleshooting window**)**
-- Phase 1: group strategy (lift-and-shift vs. redesign) and timebox
 - Final region boundaries and order for activation waves

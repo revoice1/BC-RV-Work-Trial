@@ -49,11 +49,11 @@ flowchart LR
 | Pre-hire | Up to 4 days before start date | User created **Provisioned**; Rippling activates. Workflow adds them to **Pre-start Limited Access** (excluded from group rules). See [04 ULM](../../04-hris-lifecycle-automation/PLAN.md#joiner-pre-start-access) |
 | Day 1 | Start date has passed | Workflow removes them from the limited group → group rules assign baseline apps |
 | Mover | Dept / title / manager change | Attributes update → group rules re-evaluate → access added/removed |
-| Leave of absence | Status = leave | Decide with Security: suspend vs. keep active _OPEN_ |
+| Leave of absence | Status = leave | Suspend vs. keep active: decide with Security |
 | Planned termination | Rippling termination | Rippling **suspends** Okta user → offboarding Workflow deactivates Okta + offboards Google. See [04 ULM](../../04-hris-lifecycle-automation/PLAN.md#leaver-offboarding) |
 | Urgent termination | Same-day / involuntary | **Deactivate in Okta immediately**; offboarding Workflow B triggers on deactivation, so Google steps still run. Then terminate in Rippling so the two stay in sync |
 | Rehire | Returning employee | Reactivate existing Okta user (same `employeeNumber`), don't create a duplicate |
-| Contractor | _OPEN_: in Rippling or not? | If not in Rippling, needs a separate Okta-mastered process with a required end date |
+| Contractor | Not in Rippling today | Separate Okta-mastered process with a sponsor and a required end date ([identity reconciliation](identity-reconciliation.md)) |
 
 ## Configuration Best Practices
 
@@ -79,7 +79,7 @@ flowchart TD
     G --> H[Activate remaining users in waves]
 ```
 
-## _OPEN_
+## Decisions to Confirm
 
 - Does Rippling act as a true profile master in Okta, or a push-only integration? Affects whether Okta edits get overwritten **[verify]**
 - Contractor and intern handling
