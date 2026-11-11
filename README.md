@@ -94,8 +94,8 @@ gantt
     section 03 IdP migration
     Phase 1 discovery                 :i1, 2026-11-23, 3w
     Phase 2 Okta foundation           :i2, after i1, 3w
-    Phase 3 activation: IT, Pilot     :i3, 2027-01-04, 8d
-    Phase 3 activation: regions       :i4, after i3, 8d
+    Phase 3 activation - IT + Pilot   :i3, 2027-01-04, 8d
+    Phase 3 activation - regions      :i4, after i3, 8d
     Phase 4 Google cutover            :milestone, 2027-01-25, 0d
     Phase 4 app cutovers              :i5, 2027-01-26, 5w
     Phase 5 Keycloak on ice           :i6, after i5, 30d
