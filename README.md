@@ -4,6 +4,36 @@ Work trial response. Original prompts: [Prompt.jpg](Prompt.jpg).
 
 All five prompts are treated as **one connected program** at a single fictional startup, **AiLense**, rather than five separate exercises.
 
+## Walkthrough
+
+A suggested order for presenting. Each step links to the detail behind it.
+
+| # | Topic | Talking point | Detail |
+| --- | --- | --- | --- |
+| 1 | **Scenario** | One startup, one program: SOC 2 deadline + an IdP outage as the catalyst | [Scenario](#scenario), [Program flow](#program-flow) |
+| 2 | **The outage** | Expired cert → partial outage → rotation made it total → 3 hours restoring app by app. Admins couldn't get into apps to fix them | [Postmortem](01-incident-response/postmortem.md) |
+| 3 | **App inventory** | SSO apps known from the outage; password apps need discovery; Compliance sets SOC 2 scope, which sets Okta priority | [App inventory](app-inventory.md) |
+| 4 | **MDM first** | Okta Verify needs healthy devices: JumpCloud → Iru via Apple deadline migration, scripts, and CrowdStrike for stragglers | [MDM plan](02-mdm-reenrollment/PLAN.md), [status snapshot](02-mdm-reenrollment/migration-status.md), [user guides](02-mdm-reenrollment/user-guide-mac-migration.md) |
+| 5 | **Okta migration** | Discovery → foundation (built in prod) → activation by region → Google all at once → apps one by one → Keycloak on ice | [IdP plan](03-identity-sso-migration/PLAN.md), [tenant setup](03-identity-sso-migration/docs/okta-tenant-setup.md) |
+| 6 | **HR-driven lifecycle** | Pre-start limited access; offboarding triggered by deactivation from any source | [ULM plan](04-hris-lifecycle-automation/PLAN.md) |
+| 7 | **Gap assessment** | Top 10 fixes ranked by risk, mostly found by the other workstreams; week-1 quick wins | [Gap assessment](05-security-gap-assessment/PLAN.md) |
+| 8 | **Timeline & SOC 2** | Type II window starts mid-January with documented control changes | [Timeline](#proposed-timeline), [Type II decision](#decision-soc-2-type-ii-observation-window) |
+
+## Key Decisions
+
+| Decision | Why | Where |
+| --- | --- | --- |
+| Move from self-hosted Keycloak to Okta | We owned the outage's root cause; a managed IdP removes the single point of failure and adds HR-driven lifecycle and ABAC | [Postmortem](01-incident-response/postmortem.md) |
+| SOC 2 scope decides Okta priority | SOC 2 apps first, then existing SSO apps (needed to retire Keycloak), then the rest | [App inventory](app-inventory.md#compliance-scoping--okta-priority) |
+| MDM health gates Okta Verify | Okta Verify and device signals need managed, healthy devices | [MDM plan](02-mdm-reenrollment/PLAN.md) |
+| Build Okta in prod, backport to sandbox later | Net-new org has no impact until users activate; preview orgs run a future release and can mislead | [Tenant setup §1](03-identity-sso-migration/docs/okta-tenant-setup.md#1-tenant-setup) |
+| No separate admin accounts | Phishing-resistant MFA, admin console step-up, custom roles, and alerts cover the risk | [Tenant setup §1](03-identity-sso-migration/docs/okta-tenant-setup.md#decision-no-separate-admin-accounts-for-humans) |
+| Device trust not on day 1 | SOC 2 doesn't require it; enforcing it mid-migration would lock out anyone MDM missed | [IdP plan](03-identity-sso-migration/PLAN.md#phase-2-foundation) |
+| Google cutover all at once | Per-group cutover confuses users and support; for users it's just a different sign-in check | [IdP Phase 4](03-identity-sso-migration/PLAN.md#phase-4-sign-in-cutover) |
+| Offboarding triggers on deactivation | Runs whether Rippling or IT deactivates the user | [ULM plan](04-hris-lifecycle-automation/PLAN.md#leaver-offboarding) |
+| Alerts via Okta Workflows → Slack; SIEM later | Fast to stand up; log retention handled separately (Okta keeps only 90 days) | [Tenant setup](03-identity-sso-migration/docs/okta-tenant-setup.md#security-alerting) |
+| Type II window starts mid-January | Keeps the deadline; control changes are documented as Okta replaces Keycloak | [Decision](#decision-soc-2-type-ii-observation-window) |
+
 ## Scenario
 
 1. AiLense has a **5-month SOC 2 deadline**.
@@ -25,13 +55,15 @@ flowchart TD
     B --> C[02 · MDM re-enrollment + health]
     B --> D[03 · IdP migration: discovery + Okta foundation]
     B --> E[05 · Security gap assessment]
-    C --> F[Okta Verify rollout]
+    C --> F[User activation + Okta Verify<br/>IT → Pilot → regions]
     D --> F
     D --> G[04 · HR-driven lifecycle: Rippling → Okta]
-    F --> H[App migration waves]
-    G --> H
+    F --> GW[Google cutover, all at once]
+    G --> F
+    GW --> H[App cutovers, app by app]
+    H --> K[Keycloak decommission]
     E --> I[SOC 2 audit]
-    H --> I
+    K --> I
 ```
 
 ## Workstreams
@@ -40,7 +72,7 @@ flowchart TD
 | --- | --- | --- | --- | --- | --- |
 | 01 | Incident response | Handle a 3-hour IdP outage | **Trigger:** postmortem makes the case for migrating | [01-incident-response](01-incident-response/postmortem.md) | Draft |
 | 02 | MDM re-enrollment | Re-enroll a mixed macOS/Windows fleet | **Prerequisite:** healthy fleet before Okta Verify | [02-mdm-reenrollment](02-mdm-reenrollment/PLAN.md) | Draft |
-| 03 | Identity/SSO migration | Migrate 400 people between IdPs, 5-month SOC 2 deadline | **Core project** | [03-identity-sso-migration](03-identity-sso-migration/) | In progress |
+| 03 | Identity/SSO migration | Migrate 400 people between IdPs, 5-month SOC 2 deadline | **Core project** | [03-identity-sso-migration](03-identity-sso-migration/PLAN.md) | Draft |
 | 04 | HRIS-driven lifecycle | HRIS-driven onboarding/offboarding flow | **Goes live with Okta**: joiner/leaver automation | [04-hris-lifecycle-automation](04-hris-lifecycle-automation/PLAN.md) | Draft |
 | 05 | Security gap assessment | Prioritize the top 5–10 fixes before an audit | **Parallel** with 03 | [05-security-gap-assessment](05-security-gap-assessment/PLAN.md) | Draft |
 
