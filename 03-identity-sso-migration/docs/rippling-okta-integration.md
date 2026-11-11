@@ -1,6 +1,6 @@
 # Rippling → Okta Integration
 
-> Applies when Rippling exists as the HR source of truth. See [PLAN.md](../PLAN.md#branch-hr-source-of-truth).
+> Phase 2.3 of the [IdP migration plan](../PLAN.md#phase-2-foundation): Rippling as the HR source of truth for Okta profiles.
 > Vendor-specific behavior marked **[verify]** should be confirmed against current Rippling/Okta docs and the actual tenants.
 
 ## Target Architecture
@@ -61,7 +61,7 @@ flowchart LR
 2. **Disable automatic activation emails** before the first sync. A misconfigured first sync can email 400 people at once.
 3. **Run a reconciliation before go-live:** compare the Rippling export against Keycloak users ([identity-reconciliation.md](identity-reconciliation.md)). Fix name/email mismatches in Rippling first, and decide what happens to identities HR doesn't manage.
 4. **Link, don't duplicate:** existing Google accounts must match the Rippling-created Okta users by email when the Okta → Google Workspace app is connected. Check matches in the import screen before confirming anything.
-5. **Use a dedicated integration service account** with the least-privileged admin role the integration supports **[verify]**. Store its credential in the restricted vault (see [okta-tenant-setup.md](okta-tenant-setup.md#super-admin--break-glass-accounts)) and rotate it on a schedule.
+5. **Use a dedicated integration service account** with the least-privileged admin role the integration supports **[verify]**. Store its credential in the restricted vault (see [okta-tenant-setup.md](okta-tenant-setup.md#2-super-admin--break-glass-accounts)) and rotate it on a schedule.
 6. **Group rules on attributes, not manual membership:** `department`, `userType`, `countryCode` → baseline groups. This is what fixes the "hand-maintained group" problems in the [app inventory](../../app-inventory.md).
 7. **Time zones:** confirm what time terminations take effect (midnight in which time zone?) **[verify]**.
 8. **Monitor sync failures:** alert on errors from the integration in the Okta System Log. A silent sync failure means a terminated user keeps access.
