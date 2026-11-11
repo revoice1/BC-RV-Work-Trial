@@ -64,8 +64,11 @@ gantt
     section 03 IdP migration
     Phase 1 discovery                 :i1, 2026-11-23, 3w
     Phase 2 Okta foundation           :i2, after i1, 3w
-    Okta Verify rollout (needs MDM)   :i3, 2027-01-04, 2w
-    App migration waves               :i4, after i3, 6w
+    Phase 3 activation: IT, Pilot     :i3, 2027-01-04, 8d
+    Phase 3 activation: regions       :i4, after i3, 8d
+    Phase 4 Google cutover            :milestone, 2027-01-25, 0d
+    Phase 4 app cutovers              :i5, 2027-01-26, 5w
+    Phase 5 Keycloak on ice           :i6, after i5, 30d
 
     section 05 Gap assessment
     Assessment + ranked fixes         :g1, 2026-11-23, 3w
@@ -75,15 +78,26 @@ gantt
     Rippling to Okta live             :h1, 2026-12-21, 2w
 
     section SOC 2
+    Type II observation window        :crit, 2027-01-16, 90d
     Audit deadline                    :milestone, 2027-04-16, 0d
 ```
 
-## Planning Tension to Resolve
+## Decision: SOC 2 Type II Observation Window
 
-**SOC 2 Type II vs. a 5-month deadline.** A Type II audit needs an observation period (often 3+ months) with controls operating throughout. Working backward from a mid-April deadline, the observation window would have to start around **mid-January**, about when the Okta rollout is just finishing. Options:
+**The tension:** a Type II audit needs an observation period (often 3+ months) with controls operating throughout. Working backward from a mid-April deadline, the window starts around **mid-January**, while the Okta rollout is still in progress.
 
-- Run the window with the **current controls plus documented changes** as Okta replaces them (control changes during a window are normal if documented)
-- Do a **Type I first**, then Type II
-- Negotiate a **shorter first observation period** with the auditor
+**Options considered:**
 
-Late-December holidays and change freezes also squeeze the MDM and Okta foundation work.
+- **(a) Start the window mid-January with current controls, and document each change as Okta replaces them** ← **chosen**
+- (b) Type I first, then Type II
+- (c) Negotiate a shorter first observation period with the auditor
+
+**Why (a):** control changes during an observation window are normal as long as they're documented. It keeps the original deadline, and the controls get *stronger* during the window (Keycloak → Okta, manual → HR-driven offboarding), which is a good story for the auditor.
+
+**What it requires:**
+
+- The [gap assessment](05-security-gap-assessment/PLAN.md)'s "before window" fixes land by mid-January, so the window starts with defensible controls
+- A **change log** of every control change during the window (what, when, approver, evidence before and after)
+- **Log retention for both IdPs** across the whole window: Keycloak logs exported, Okta logs kept for 365 days (Okta retains only 90 days on its own)
+
+Late-December holidays and change freezes squeeze the MDM and Okta foundation work, so those dates have the least slack.

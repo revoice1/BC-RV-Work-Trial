@@ -77,12 +77,84 @@ flowchart LR
 - **Prep now:** the Iru + Okta integration (certificate profile, Okta Verify, Device Assurance) is configured during Phase 2 and the MDM migration, so enforcement later is just a policy change. Tracked in [okta-tenant-setup.md](docs/okta-tenant-setup.md#iru--okta-device-management-integration).
 - **Why:** SOC 2 doesn't require device trust, so it stays off the critical path. Enforcing it on day 1 would tie sign-in to MDM health mid-migration, and any machine MDM missed would lock its user out.
 
-### Phase 3+
+### Phase 3: User Activation
 
-_OPEN: phase list to come._ Okta Verify rollout (via MDM, gated by [MDM health](../02-mdm-reenrollment/PLAN.md#definition-of-healthy)) happens at user activation; details in [okta-tenant-setup.md §4](docs/okta-tenant-setup.md#4-okta-verify-rollout-via-mdm).
+**Goal:** every user active in Okta with MFA enrolled, before any sign-in moves off Keycloak.
 
-- **End-user guide:** [user-guide-okta-setup.md](user-guide-okta-setup.md) (activation, password, MFA, Okta Verify)
-- **Coverage report:** [scripts/Get-OktaManagedDeviceReport.ps1](scripts/Get-OktaManagedDeviceReport.ps1) (users with a managed device vs. not; run with `-Demo` to try it without Okta)
+**Waves:** IT → Pilot → **by major region** (AiLense is global).
+
+| Wave | Who | Gate to start | Purpose |
+| --- | --- | --- | --- |
+| 0 | IT (incl. regional support staff) | Phase 2 complete | Test end to end; support staff learn it by doing it |
+| 1 | Pilot volunteers, mixed regions and platforms | Wave 0 clean | Validate the guide, support load, Okta Verify enrollment |
+| 2 | Region 1 (e.g., Americas) **(proposed)** | Region's [MDM health](../02-mdm-reenrollment/PLAN.md#definition-of-healthy) ≥ 95% | Bulk activation |
+| 3 | Region 2 (e.g., EMEA) | Same | Bulk activation |
+| 4 | Region 3 (e.g., APAC) | Same | Bulk activation |
+
+- **Activation is scheduled for each region's local morning**, so users and local support are online when the emails land.
+- Users follow the [Okta setup guide](user-guide-okta-setup.md): activate, set password, enroll MFA and Okta Verify ([rollout details](docs/okta-tenant-setup.md#4-okta-verify-rollout-via-mdm)).
+- Coverage is measured with [Get-OktaManagedDeviceReport.ps1](scripts/Get-OktaManagedDeviceReport.ps1).
+
+#### Regional support prep
+
+Before each region's wave, the **local support team** gets a support kit:
+
+- The end-user guide and FAQ, plus **known issues** collected from the IT and Pilot waves
+- How to reset MFA safely: identity verification steps and the Help Desk admin role (no Super Admin)
+- Escalation path to core IT, with on-call coverage overlapping the region's hours
+- The wave schedule and the comms users received, so support knows what users were told
+- Local support activates in **wave 0**, so they've been through it themselves
+
+### Phase 4: Sign-in Cutover
+
+#### Google Workspace: all at once
+
+Once **every user is active** in Okta, Google's SSO setting is switched from Keycloak to Okta **for the whole org in one change**.
+
+- **Why all at once:** a per-group cutover means different people sign in different ways at the same time, which confuses users and support. For users, the change is nearly invisible: the next time Google asks them to sign in, they get an Okta check instead of Keycloak.
+- **Hard gate:** anyone not yet active in Okta would lose Google access, so the cutover waits for 100% activation (or a documented exception list with a plan for each person).
+- **Rollback:** switch Google's SSO setting back to Keycloak, which is still running.
+- **"Sign in with Google" apps** move with it automatically. Priority 1 apps among them still get direct SAML/SCIM in the app cutovers below ([why](../app-inventory.md#compliance-scoping--okta-priority)).
+
+#### Apps: app by app
+
+Apps move **one at a time, several per day**, in [inventory priority order](../app-inventory.md#compliance-scoping--okta-priority) (SOC 2 apps first).
+
+**Per-app runbook:**
+
+1. Build the app in Okta (SAML/OIDC, SCIM where supported); assign groups from the [assignment review](../app-inventory.md#assignment-review)
+2. Match the **NameID** to what Keycloak sends today (captured in Phase 1), or accounts duplicate
+3. Test with a test user
+4. Cut over: point the app at Okta's metadata/certificate
+5. Verify with real users; watch sign-in errors
+6. **Rollback:** point the app back at Keycloak's metadata
+
+**Comms depend on audience size:**
+
+| App audience | Comms |
+| --- | --- |
+| **Org-wide** (e.g., Slack, Zoom) | Company announcement → cutover → test → announce done |
+| **Smaller audience** (e.g., NetSuite, Greenhouse) | A **temporary Slack channel per app** with that app's users: what will change, when, what to expect; confirmation after; channel archived once stable |
+
+### Phase 5: Keycloak Decommission
+
+- **Keep it on ice:** it's hosted, so it stays running but frozen (no changes) after the last app moves. It remains the rollback target until shutdown.
+- **30 days after the last cutover:** review Keycloak logs for **any unexpected sign-in activity** (a missed app, a script, an integration) and fix each one before shutdown.
+- **Export Keycloak logs** covering the transition, and keep them for the audit year.
+- **Cut service** once the logs are clean, and close the related [postmortem action items](../01-incident-response/postmortem.md#action-items).
+
+**Log retention across the transition:** Okta keeps System Log data for only **90 days**, but the audit covers a full year. A SIEM, or another export-and-store solution, must hold Okta logs for **365 days** ([logging policy](docs/okta-tenant-setup.md#3-policy-setup-with-securitycompliance)). Together with the Keycloak export, that covers the whole audit period.
+
+### Phase Summary
+
+```mermaid
+flowchart LR
+    P1[1 Discovery] --> P2[2 Foundation]
+    P2 --> P3[3 Activation<br/>IT → Pilot → regions]
+    P3 --> G[4a Google cutover<br/>all at once]
+    G --> A[4b App cutovers<br/>app by app]
+    A --> P5[5 Keycloak on ice<br/>30 days → shut down]
+```
 
 ## Appendix: Alternative Scenario
 
@@ -110,7 +182,6 @@ The mismatch handling and non-person account rules in [identity-reconciliation.m
 
 ## Open Questions
 
-- Hands-on slice: app inventory prioritization vs. SCIM/SAML mapping (or both)
-- Prior IdP migration experience to draw lessons from
-- Okta features in scope (Lifecycle Mgmt, Workflows, FastPass/Device Trust, OIG, etc.)
-- SOC 2 controls/evidence ownership
+- Who makes the rollback call for an app cutover, and on what signal? **(proposed:** IT lead with the app owner, if users still can't sign in after a set troubleshooting window**)**
+- Phase 1: group strategy (lift-and-shift vs. redesign) and timebox
+- Final region boundaries and order for activation waves
