@@ -1,5 +1,7 @@
 # AiLense: SOC 2 Readiness & Identity Modernization
 
+**Program brief (one-page visual summary): https://revoice1.github.io/BC-RV-Work-Trial/**
+
 Responses to the five prompts in [Prompt.jpg](Prompt.jpg). The prompts read as a menu; this response addresses **all five as one connected program** at **AiLense**, because in practice they depend on each other: the outage drives the migration, MDM gates Okta, Okta enables HR-driven lifecycle, and all of it feeds the SOC 2 audit.
 
 ## Scenario
@@ -147,5 +149,5 @@ Late-December holidays and change freezes squeeze the MDM and Okta foundation wo
 
 ## Shared Artifacts
 
-- **[Program brief](docs/index.html):** one-page visual summary for presenting: scenario, outage, program flow, timeline, decisions, top 10 fixes, MVP. Viewable as a web page once GitHub Pages is enabled (Settings → Pages → branch `main`, folder `/docs`).
+- **[Program brief](docs/index.html):** one-page visual summary for presenting: scenario, outage, program flow, timeline, decisions, top 10 fixes, MVP. Live at https://revoice1.github.io/BC-RV-Work-Trial/
 - **[App inventory](app-inventory.md):** every app, how users sign in, SOC 2 scope, Okta priority, and assignment review. Used by the postmortem, IdP migration, and gap assessment.
