@@ -10,7 +10,7 @@
   - **The "no impact" window ends** at the first of: Rippling syncing real users, activation emails going out, or any app/Google sign-in pointing at Okta. Those steps are deliberate, scheduled changes.
   - **After launch:** backport the prod configuration into a sandbox org and use it for testing changes. Still check results against prod behavior, since the sandbox runs ahead of prod.
   - **Test accounts in prod** are named and tagged as test accounts, tracked, and deactivated (or kept tagged and excluded from access reviews by documented exception) after launch. Untracked test accounts with access are an audit finding.
-- **Custom domain:** e.g., `login.ailense.com`, so users learn one trusted URL (phishing awareness).
+- **Org URL:** `ailense.okta.com` (the standard Okta subdomain). Users learn this one trusted URL (phishing awareness). A custom domain is optional and not planned.
 - **Branding:** company sign-in page and email templates, so Okta emails don't look like phishing.
 - **Admin roles:** least privilege from day one.
 

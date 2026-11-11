@@ -8,7 +8,7 @@
 
 ## What's happening?
 
-AiLense is moving to **Okta** for signing in to work apps. It's more reliable than our old system and keeps your account more secure. After setup, you'll sign in at **`login.ailense.com`**.
+AiLense is moving to **Okta** for signing in to work apps. It's more reliable than our old system and keeps your account more secure. After setup, you'll sign in at **`ailense.okta.com`**.
 
 ## ✅ Before You Start
 
@@ -23,7 +23,7 @@ AiLense is moving to **Okta** for signing in to work apps. It's more reliable th
 
 Look for an email from **Okta** with the subject **"Activate your AiLense account"** **[confirm subject]**.
 
-> 🛡️ **Check the link before you click:** it should go to **`https://login.ailense.com`**. If it goes anywhere else, don't click it. Report it in **#it-support**.
+> 🛡️ **Check the link before you click:** it should go to **`https://ailense.okta.com`**. If it goes anywhere else, don't click it. Report it in **#it-support**.
 
 Click **Activate**. The link expires after **[N] days**. If it has expired, ask in #it-support for a new one.
 
@@ -65,13 +65,13 @@ After this, signing in on your laptop is usually just a click or a fingerprint. 
 
 ### 5. Check it worked
 
-Go to **`login.ailense.com`**. You should see your **Okta dashboard** with your work apps.
+Go to **`ailense.okta.com`**. You should see your **Okta dashboard** with your work apps.
 
 ## 🛡️ Stay Safe
 
 - **Never approve a sign-in you didn't start.** If your phone asks you to approve something out of the blue, **deny it** and report it in **#it-support** right away.
 - **IT will never ask for your password or a code**, over Slack, email, or phone.
-- Okta sign-in only happens at **`login.ailense.com`**.
+- Okta sign-in only happens at **`ailense.okta.com`**.
 
 ## 🆘 Need Help?
 
