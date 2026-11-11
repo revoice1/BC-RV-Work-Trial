@@ -12,27 +12,42 @@
 
 | Role | Holders | Notes |
 | --- | --- | --- |
-| Super Admin | 2–3 named IT admins **(proposed)** | Daily-use admin accounts separate from their regular user accounts _OPEN_ |
-| Break-glass Super Admin | 2 dedicated accounts | See below |
+| Break-glass Super Admin | Initial org Super Admin account | See §2 |
+| Super Admin | 1–2 named IT admins **(proposed)** | Kept minimal; used only when a task truly needs it |
+| IT Admin (custom role) | IT team | Day-to-day admin work: apps, groups, users, no org-wide security settings |
 | Help Desk (custom role) | IT support | Reset MFA/password, no policy or app config |
 | Read-only Admin | Security / audit | Evidence collection |
 | Integration service accounts | Rippling, SIEM, scripts | Scoped roles or OAuth service apps, not personal API tokens |
+
+### Decision: no separate admin accounts for humans
+
+Admins use **their regular Okta account**, with admin roles assigned to it. Separate admin accounts add friction and more accounts to manage, and the risks they used to address are covered by these **compensating controls**:
+
+| Risk separate accounts addressed | Compensating control |
+| --- | --- |
+| Admin gets phished | Phishing-resistant MFA (FastPass / FIDO2) required for all admins |
+| Daily session hijacked and used for admin actions | Okta Admin Console sign-in policy: phishing-resistant re-authentication **every time**, short admin session **(proposed: 30 min idle)**; enable Okta's admin session protections **[verify]** |
+| Compromised admin laptop | Device trust required for the Admin Console once [MDM coverage](../../02-mdm-reenrollment/PLAN.md#definition-of-healthy) is in place; admins are IT, so their devices are healthy first |
+| Too much standing privilege | Daily work uses **custom roles**, not Super Admin; Super Admin held by 1–2 people plus break-glass |
+| Unnoticed privilege changes | [Security alerts](#security-alerting) on admin role assignments/changes and any Super Admin use; admin roles included in the quarterly access review |
+
+**SOC 2:** SOC 2 requires least privilege, MFA, and restricted privileged access (CC6.1, CC6.3), not separate accounts. The controls above, documented with this rationale, cover it.
 
 ## 2. Super Admin & Break-glass Accounts
 
 **Why break-glass matters:** if SSO, MFA, or a policy change locks admins out, these are the way back in.
 
-- **Two break-glass accounts**, not tied to any person.
+- **The initial org Super Admin is the break-glass account.** The account used to create the Okta org isn't tied to any person and isn't used day to day.
 - **Avoid a circular dependency:** the break-glass account's email and recovery must **not** depend on Okta. Once Google Workspace is federated to Okta, a mailbox behind Google SSO can't receive the reset email during an Okta outage. Use a mailbox that's excluded from SSO, or a separate domain.
 - **Credentials:**
-  - Password stored in a restricted password manager vault (e.g., 1Password break-glass vault, accessible only to Security + IT lead)
+  - Documented in a restricted **1Password** break-glass vault (accessible only to Security + IT lead)
+  - **1Password must stay reachable when Okta is down:** don't put its unlock behind Okta without an offline fallback ([postmortem item 10](../../01-incident-response/postmortem.md#action-items))
   - Sealed offline copy in a physical safe **(proposed)**
-- **MFA:** two FIDO2 hardware keys per account, stored separately.
+- **MFA:** **two FIDO2 hardware keys** enrolled on the account, stored in separate locations. One account is enough as long as losing a single key can't lock you out.
 - **Exempt from** the policies most likely to lock them out (device trust, network zones), but **always** require MFA.
-- **Monitoring:** any break-glass sign-in alerts Security immediately (System Log → SIEM / Slack).
+- **Monitoring:** any break-glass sign-in alerts Security immediately via an **Okta Workflow → Slack** (see [Security alerting](#security-alerting)).
 - **Test quarterly:** sign in, verify, document. This produces SOC 2 evidence.
 - **Google side too:** keep 2 Google Workspace super admins as break-glass. Google super admins don't sign in through third-party SSO, so they still work if Okta is down **[verify]**.
-- **The tenant's first account:** the account used to create the Okta org becomes a super admin. Either make it break-glass account #1, or demote it once the named admins exist.
 
 ## 3. Policy Setup (with Security/Compliance)
 
@@ -47,7 +62,22 @@
 | App sign-in tiers | **Standard:** any MFA. **Sensitive** (AWS, GitHub, NetSuite, etc.): phishing-resistant + managed device. **Okta Admin Console:** phishing-resistant, every time | Risk-tiered; maps to the app inventory |
 | Network | Block anonymizers/Tor (dynamic zone); ThreatInsight enabled (log first, then block) | Credential-stuffing protection |
 | Account recovery | Self-service via Okta Verify; help desk resets require **identity verification** (video call + manager confirm) **(proposed)** | Help desk social engineering is a top IdP attack path |
-| Logging | Stream System Log to SIEM; retain ≥ 1 year **(proposed)** | Okta keeps logs about 90 days **[verify]**; a Type II audit window needs evidence for the full period |
+| Logging | **Alerts:** Okta Workflows → Slack now, SIEM when available. **Retention:** keep System Log ≥ 1 year **(proposed)**; until a SIEM exists, stream or export it to long-term storage (e.g., S3) **[verify]** | Okta keeps logs about 90 days **[verify]**; a Type II audit window needs evidence for the full period |
+
+### Security alerting
+
+**Now:** Okta Workflows trigger on System Log events and post to a Slack channel (e.g., `#security-alerts` **(proposed)**). **Future:** forward to a SIEM when one is available; the Slack alerts can stay as the fast notification path.
+
+| Event | Why |
+| --- | --- |
+| Break-glass account sign-in | Should never happen outside an emergency or the quarterly test |
+| Any Super Admin role use or assignment | Super Admin is kept to 1–2 people |
+| Admin role assigned / removed | Privilege changes must be expected and approved |
+| Sign-in, password, or authenticator policy changed | A weakened policy is a silent risk |
+| MFA reset by help desk | Top social engineering path; spot unusual volume |
+| Lifecycle Workflow failure ([04 ULM](../../04-hris-lifecycle-automation/PLAN.md)) | A failed offboarding means a leaver keeps access |
+
+**Limits to note:** Slack alerts are notifications, not a log archive. They don't replace log retention for SOC 2 (see Logging above), and someone must own watching the channel.
 
 ### Policy testing (proposed)
 
@@ -84,10 +114,10 @@ Results recorded with screenshots: they double as SOC 2 evidence that controls w
 ### Rollout steps
 
 1. **Package and deploy** Okta Verify silently through MDM (macOS and Windows), preconfigured with the org URL where supported **[verify]**.
-2. **Managed device signal:** deploy the device management certificate via MDM so Okta can tell managed devices from unmanaged ones **[verify]**.
-3. **Enroll:** users enroll Okta Verify on mobile (MFA) and desktop (FastPass) during their activation wave.
+2. **Managed device signal:** deploy the device management certificate via Iru so Okta can tell managed devices from unmanaged ones **[verify]**. Tracked in [Iru + Okta device management integration](#iru--okta-device-management-integration).
+3. **Enroll:** users enroll Okta Verify on mobile (MFA) and desktop (FastPass) during their activation wave. End-user guide: [user-guide-okta-setup.md](../user-guide-okta-setup.md).
 4. **Phase it:** IT pilot → early adopters → by department, in step with the user activation waves.
-5. **Measure:** % of users enrolled and % of devices reporting as managed. Don't enforce FastPass or managed-device policies until coverage is high enough **(proposed: 95%+)**.
+5. **Measure:** % of users enrolled and % of devices reporting as managed ([Get-OktaManagedDeviceReport.ps1](../scripts/Get-OktaManagedDeviceReport.ps1)). Don't enforce FastPass or managed-device policies until coverage is high enough **(proposed: 95%+)**.
 6. **Enforce:** turn on the "Sensitive" tier policies once coverage is reached. Set up an exception process for stragglers.
 
 ```mermaid
@@ -112,10 +142,25 @@ flowchart LR
 
 **Certificate rollout** for the managed-device signal is deployed via MDM in step 2 above. It isn't enforced until the post-migration stage.
 
+### Iru + Okta device management integration
+
+**Goal:** Okta can tell an Iru-managed device from any other device, so sign-in policies can require a managed device for the sensitive tier.
+
+**Timing:** add the certificate profile to **Iru's baseline before MDM migration wave 2**, so devices land in Iru already carrying it. Adding it after the migration means a second push to the whole fleet. Configuring it early is safe because nothing is **enforced** until the post-migration stage.
+
+| # | Task | System | Timing | Status |
+| --- | --- | --- | --- | --- |
+| 1 | Enable device management integration; decide certificate authority (Okta as CA vs. our own CA via SCEP) **[verify]** | Okta | Phase 2 | Not started |
+| 2 | Create certificate (SCEP) profiles for macOS and Windows pointing at Okta | Iru | Before MDM wave 2 | Not started |
+| 3 | Deploy Okta Verify with managed configuration (org URL) | Iru | Before MDM wave 2 | Not started |
+| 4 | Define Device Assurance policies (OS version, disk encryption, screen lock) **matching Iru's compliance policies**, so the two systems don't disagree about what "healthy" means | Okta + Iru | Phase 2 | Not started |
+| 5 | Test in preview: managed device passes, unmanaged/personal device blocked from a sensitive-tier test app | Okta preview | Phase 2 | Not started |
+| 6 | Measure: users with a managed device ([Get-OktaManagedDeviceReport.ps1](../scripts/Get-OktaManagedDeviceReport.ps1)) vs. devices healthy in Iru ([device tracker](../../02-mdm-reenrollment/device-tracker.csv)); investigate gaps | Okta + Iru | During activation | Not started |
+| 7 | Enforce managed device on the sensitive tier once coverage target is met | Okta | Post-migration | Not started |
+
 ## _OPEN_
 
-- Do named admins use separate admin accounts?
 - Final session and password values (policy workshop)
 - Help desk identity verification procedure
-- SIEM destination and log retention period
+- SIEM selection (future) and long-term log storage until then
 - Okta Verify enforcement threshold and exception process

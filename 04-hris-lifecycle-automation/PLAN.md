@@ -12,7 +12,7 @@
 | **Leaver** | Rippling termination suspends the Okta user | Workflow deactivates Okta and offboards Google (data transfer, archive, mail continuity) |
 | **Leaver + 90 days** | Scheduled | Workflow notifies, then cleans up the leaver's mail-continuity group |
 
-Attribute mapping from Rippling to Okta: [rippling-okta-integration.md](../03-identity-sso-migration/docs/rippling-okta-integration.md#schema-mapping).
+Attribute mapping from Rippling to Okta: [rippling-okta-integration.md](../03-identity-sso-migration/docs/rippling-okta-integration.md#schema-mapping). The leaver Workflow uses the **`managerEmail`** attribute to find who receives Drive, Calendar, and the mail-continuity DL.
 
 ## Joiner: Pre-start Access
 

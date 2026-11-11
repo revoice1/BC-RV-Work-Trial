@@ -102,7 +102,13 @@ A device counts as migrated when **(proposed)**:
 - CrowdStrike running
 - JumpCloud agent removed
 
+**Tracked, not gating:** Okta device certificate and Okta Verify installed via Iru (see below). Needed later for device trust, but not required to start the Okta Verify rollout.
+
 **Exit criterion:** coverage target met (e.g., 95%+ healthy) before the Okta Verify rollout starts, with every exception tracked to a named device and owner.
+
+## Follow-on: Okta Device Management
+
+Iru also needs to deliver Okta's device certificate and Okta Verify so Okta can recognize managed devices. **Add both to the Iru baseline before wave 2** so migrated devices don't need a second push. Task list and status are tracked in the IdP workstream: [Iru + Okta device management integration](../03-identity-sso-migration/docs/okta-tenant-setup.md#iru--okta-device-management-integration).
 
 ## Tracking
 

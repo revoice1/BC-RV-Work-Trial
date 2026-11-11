@@ -32,6 +32,7 @@ flowchart LR
 | Job title | `title` | |
 | Department | `department` | Drives group rules |
 | Manager | `managerId` (+ `manager`) | Use manager's employee ID, not name |
+| Manager work email | custom `managerEmail` | Used by [04 ULM](../../04-hris-lifecycle-automation/PLAN.md) Workflows: offboarding Drive/Calendar transfer, mail-continuity DL membership, notifications. Kept alongside `managerId` so Workflows don't need an extra lookup |
 | Employment type (FTE / contractor / intern) | `userType` | Drives group rules and policy |
 | Work location / country | `city`, `countryCode` | Region-based access/policy if needed |
 | Cost center | `costCenter` | Optional; license chargeback |

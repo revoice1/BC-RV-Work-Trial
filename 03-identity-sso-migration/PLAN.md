@@ -65,7 +65,7 @@ flowchart LR
 
 | Step | Summary | Detail |
 | --- | --- | --- |
-| **2.1 Tenant & admin setup** | Prod + preview orgs, custom domain, branding, least-privilege admin roles, break-glass accounts | [okta-tenant-setup.md §1–2](docs/okta-tenant-setup.md#1-tenant-setup) |
+| **2.1 Tenant & admin setup** | Prod + preview orgs, custom domain, branding, least-privilege admin roles (no separate admin accounts; compensating controls), initial org Super Admin as break-glass | [okta-tenant-setup.md §1–2](docs/okta-tenant-setup.md#1-tenant-setup) |
 | **2.2 Sign-in & app policy creation and testing** | Workshop with Security/Compliance (password, authenticators, session, app sign-in tiers, recovery, logging), then test every policy with test users in preview before prod | [okta-tenant-setup.md §3](docs/okta-tenant-setup.md#3-policy-setup-with-securitycompliance) |
 | **2.3 Rippling integration & profile sourcing** | Rippling becomes the source of truth for user profiles in Okta: schema mapping, lifecycle events, users created Staged | [rippling-okta-integration.md](docs/rippling-okta-integration.md) |
 | **2.4 Keycloak comparison** | Compare Rippling-sourced profiles to Keycloak to find identities HR doesn't manage (contractors, service accounts, shared accounts) and decide which to pull over | [identity-reconciliation.md](docs/identity-reconciliation.md) |
@@ -74,11 +74,15 @@ flowchart LR
 
 - **Day 1:** MFA everywhere; phishing-resistant MFA for admins and sensitive apps.
 - **Later:** device trust for the sensitive tier only, once MDM coverage is measured. Phasing is in [okta-tenant-setup.md §4](docs/okta-tenant-setup.md#device-trust-phasing).
+- **Prep now:** the Iru + Okta integration (certificate profile, Okta Verify, Device Assurance) is configured during Phase 2 and the MDM migration, so enforcement later is just a policy change. Tracked in [okta-tenant-setup.md](docs/okta-tenant-setup.md#iru--okta-device-management-integration).
 - **Why:** SOC 2 doesn't require device trust, so it stays off the critical path. Enforcing it on day 1 would tie sign-in to MDM health mid-migration, and any machine MDM missed would lock its user out.
 
 ### Phase 3+
 
 _OPEN: phase list to come._ Okta Verify rollout (via MDM, gated by [MDM health](../02-mdm-reenrollment/PLAN.md#definition-of-healthy)) happens at user activation; details in [okta-tenant-setup.md §4](docs/okta-tenant-setup.md#4-okta-verify-rollout-via-mdm).
+
+- **End-user guide:** [user-guide-okta-setup.md](user-guide-okta-setup.md) (activation, password, MFA, Okta Verify)
+- **Coverage report:** [scripts/Get-OktaManagedDeviceReport.ps1](scripts/Get-OktaManagedDeviceReport.ps1) (users with a managed device vs. not; run with `-Demo` to try it without Okta)
 
 ## Appendix: Alternative Scenario
 
